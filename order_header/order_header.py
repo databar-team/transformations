@@ -22,12 +22,12 @@ cast(jrs.salesrep_number as bigint) as SALES_REP_NUMBER,
 hca.account_number as ORACLE_CUSTOMER_NUMBER,
 joha.service_order_id as SERVICE_ORDER_NUMBER,
 joha.oracle_order_number as ORACLE_ORDER_NUMBER,
-date(date_format(joha.received_date, 'dd-MM-yyyy')) as ORDER_ENTERED_DATE,
-date(date_format(joha.requested_delivery_date, 'dd-MM-yyyy')) as ORDER_REQUESTED_DELIVERY_DATE,
-date(date_format(joha.requested_ship_date, 'dd-MM-yyyy')) as ORDER_SCHEDULED_SHIP_DATE,
-date(date_format(joha.creation_date, 'dd-MM-yyyy HH:mm:ss')) as ORDER_CREATED_DATE,
+date_format(joha.received_date, 'dd-MM-yyyy') as ORDER_ENTERED_DATE,
+date_format(joha.requested_delivery_date, 'dd-MM-yyyy') as ORDER_REQUESTED_DELIVERY_DATE,
+date_format(joha.requested_ship_date, 'dd-MM-yyyy') as ORDER_SCHEDULED_SHIP_DATE,
+date_format(joha.creation_date, 'dd-MM-yyyy HH:mm:ss') as ORDER_CREATED_DATE,
 cast(NULL as DATE) as ORDER_IMPORTED_DATE,
-cast(NULL as bigint) as ORDER_CYCLE_DURATION ,
+cast(NULL as bigint) as ORDER_CYCLE_DURATION,
 joha.order_group as ORDER_GROUP,
 ott.name as ORDER_TYPE,
 joha.order_class as ORDER_CLASS,
@@ -70,7 +70,7 @@ CASE joha.context WHEN 'DIPL' THEN joha.attribute16 when 'GREG' then joha.attrib
 joha.combined_order_header_id as COMBINED_BRIDGE_ORDER,
 joha.combined_order_flag as COMBINED_ORDER_FLAG,
 fndu.user_name as CREATED_BY,
-date(date_format(joha.creation_date, 'dd-MM-yyyy HH:mm:ss')) as CREATION_DATE,
+date_format(joha.creation_date, 'dd-MM-yyyy HH:mm:ss') as CREATION_DATE,
 joha.comments as COMMENTS,
 CASE joha.context WHEN 'LFXP' THEN joha.attribute1 ELSE NULL END as LFXP_WHO,
 CASE joha.context WHEN 'LFXP' THEN joha.attribute2 ELSE NULL END as LFXP_ORDER_NUMBER,
@@ -78,7 +78,7 @@ CASE joha.context WHEN 'LFXP' THEN joha.attribute3 ELSE NULL END as LFXP_WHAT_WA
 CASE joha.context WHEN 'LFXP' THEN joha.attribute4 ELSE NULL END as LFXP_WHAT_WAS_RECEIVED,
 CASE joha.context WHEN 'LFXP' THEN joha.attribute5 ELSE NULL END as BRIDGE_ORDER_GRAD_DATE,
 cast (NULL as DOUBLE) as GRAD_YEAR,
-CASE joha.context WHEN 'SAPC' THEN SUBSTR (joha.attribute2, 1, (INSTR (joha.attribute2, '-') - 1)) ELSE NULL END as PHOTOGRAPHER_NUMBER,
+cast(CASE joha.context WHEN 'SAPC' THEN SUBSTR (joha.attribute2, 1, (INSTR (joha.attribute2, '-') - 1)) ELSE NULL END as bigint) as PHOTOGRAPHER_NUMBER,
 CASE joha.context WHEN 'SAPC' THEN SUBSTR (joha.attribute2, (INSTR (joha.attribute2, '-') + 1), LENGTH(joha.attribute2)) ELSE NULL END as PHOTOGRAPHER_NAME,
 REPLACE(joha.source_order_reference,CHR(31),'') as SOURCE_ORDER_REFERENCE,
 CASE joha.context WHEN 'YBMS' THEN joha.attribute1 ELSE NULL END as YBMS_JOB_NUMBER,
@@ -100,7 +100,7 @@ UPPER (joha.mfg_instructions) as MFG_INSTRUCTIONS,
 CASE joha.context WHEN 'GREG' THEN joha.attribute20 ELSE NULL END as GREG_GRAD_TYPE_DATE,
 CASE joha.context WHEN 'DIPL' THEN joha.attribute11 ELSE NULL END as SUBMITTER_TYPE,
 coalesce(jsr.attribute3, '') as SHOP_HANDLING_CODE,
-date(date_format(joha.LAST_UPDATE_DATE, 'dd-MM-yyyy')) as LAST_UPDATE_DATE,
+date_format(joha.LAST_UPDATE_DATE, 'dd-MM-yyyy') as LAST_UPDATE_DATE,
 CASE joha.context WHEN 'JLRY' THEN joha.attribute18 ELSE NULL END as SCHEDULE_TYPE,
 joha.purchase_order_number as PURCHASE_ORDER_NUMBER,
 CASE joha.context WHEN 'JLRY' THEN joha.attribute17 when 'ANNC' then joha.attribute17 ELSE NULL END as ZDP_INDICATOR,
@@ -143,7 +143,7 @@ joha.merge_eligible_flag as MERGE_ELIGIBLE_FLAG,
           ON     joha.service_order_id = jsr.service_order_id -- Added new by madishs
              AND jsr.report_name = 'MFG_PROC'
        LEFT JOIN cte_xxxx
-          on cte_xxxx.order_header_id = joha.order_header_id             """
+          on cte_xxxx.order_header_id = joha.order_header_id      """
 
 ### Run Query: 
 print (sql) 

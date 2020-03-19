@@ -5,8 +5,8 @@ For example:
   WHERE contact_id(+) = su.ship_to_contact_id)
           SHIP_TO_CONTACT,
 
+ CASE first_name WHEN NULL THEN NULL ELSE ', '||first_name END
  
-
 Could be re-written as:
 
 (SELECT last_name || DECODE (first_name, NULL, NULL, ', ' || first_name)
