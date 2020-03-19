@@ -1,5 +1,5 @@
 sql = """ 
-WITH cte_xxxx
+ WITH cte_xxxx
 AS
 (SELECT joha.context
       ,HCA.ACCOUNT_NUMBER
@@ -27,7 +27,7 @@ date(date_format(joha.requested_delivery_date, 'dd-MM-yyyy')) as ORDER_REQUESTED
 date(date_format(joha.requested_ship_date, 'dd-MM-yyyy')) as ORDER_SCHEDULED_SHIP_DATE,
 date(date_format(joha.creation_date, 'dd-MM-yyyy HH:mm:ss')) as ORDER_CREATED_DATE,
 cast(NULL as DATE) as ORDER_IMPORTED_DATE,
-cast(NULL  as DATE) as ORDER_CYCLE_DURATION,
+cast(NULL as bigint) as ORDER_CYCLE_DURATION ,
 joha.order_group as ORDER_GROUP,
 ott.name as ORDER_TYPE,
 joha.order_class as ORDER_CLASS,
@@ -143,10 +143,7 @@ joha.merge_eligible_flag as MERGE_ELIGIBLE_FLAG,
           ON     joha.service_order_id = jsr.service_order_id -- Added new by madishs
              AND jsr.report_name = 'MFG_PROC'
        LEFT JOIN cte_xxxx
-          on cte_xxxx.order_header_id = joha.order_header_id
-             limit 10
-
-             """
+          on cte_xxxx.order_header_id = joha.order_header_id             """
 
 ### Run Query: 
 print (sql) 

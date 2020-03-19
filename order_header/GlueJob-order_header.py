@@ -60,7 +60,7 @@ date(date_format(joha.requested_delivery_date, 'dd-MM-yyyy')) as ORDER_REQUESTED
 date(date_format(joha.requested_ship_date, 'dd-MM-yyyy')) as ORDER_SCHEDULED_SHIP_DATE,
 date(date_format(joha.creation_date, 'dd-MM-yyyy HH:mm:ss')) as ORDER_CREATED_DATE,
 cast(NULL as DATE) as ORDER_IMPORTED_DATE,
-cast(NULL  as DATE) as ORDER_CYCLE_DURATION,
+cast(NULL as bigint) as ORDER_CYCLE_DURATION,
 joha.order_group as ORDER_GROUP,
 ott.name as ORDER_TYPE,
 joha.order_class as ORDER_CLASS,
