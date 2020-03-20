@@ -38,7 +38,11 @@ jioa.use_profile_flag as USE_PROFILE_FLAG,
 jioa.creation_date as IO_CREATION_DATE,
                    '"' || REPLACE (jioa.salesrep_notes, '"', '""') || '"' as COMMENTS,
 jioa.attribute39 as NAMELIST_FILE,
-
+/*
+" SUBSTR (CASE jiodfv.context_value WHEN 'DIPL' THEN jiodfv.grad_pres_date ELSE NULL END, 1, 150) as GRAD_PRES_DATE,
+"
+  SUBSTR(CASE jiodfv.context_value WHEN 'DIPL' THEN jiodfv.using_contemporary_dateline ELSE NULL END,1,80) as USING_CONTEMPORARY_DATELINE,
+  */
 jioa.combined_indv_order_id as COMBINED_INDV_ORDER_NUMBER,
  SUBSTR(CASE jioa.context WHEN 'JEWL' THEN jioa.attribute9 ELSE NULL END,1,5) as JOP_IO_NUMBER,
  CASE WHEN jioa.context = 'ANNC_SY04' THEN CASE WHEN jioa.attribute65 = '1' THEN 'Y' ELSE 'N' END ELSE NULL END as SPECIAL_OFFERS_OPT_IN_FLAG,
@@ -85,7 +89,86 @@ SUBSTR (CASE jioa.context WHEN 'JLRY_STD' THEN jioa.ATTRIBUTE1 WHEN 'CHAMP_RING'
           'STUDENT_GREG' THEN SUBSTR (jioa.attribute3, 1, 3) ELSE
           CASE SUBSTR (jioa.context, 1, 7) WHEN
                    'ANNC_SY' THEN SUBSTR (jioa.attribute28, 1, 3) ELSE
-                   NULL END END                   
+                   NULL END END AS HEIGHT,
+CASE
+          jioa.context WHEN
+          'AN_SPR08' THEN SUBSTR (jioa.attribute27, 1, 3) WHEN
+          'AN_SPR18' THEN SUBSTR (jioa.attribute27, 1, 3) WHEN
+          'ANNC_SCAN_WEB' THEN SUBSTR (jioa.attribute27, 1, 3) WHEN
+          'BULK' THEN NULL WHEN
+          'CCG003' THEN SUBSTR (jioa.attribute2, 1, 3) WHEN
+          'CCG008' THEN SUBSTR (jioa.attribute4, 1, 3) WHEN
+          'CG100' THEN SUBSTR (jioa.attribute4, 1, 3) WHEN
+          'CG120' THEN SUBSTR (jioa.attribute4, 1, 3) WHEN
+          'CG95' THEN SUBSTR (jioa.attribute5, 1, 3) WHEN
+          'CGANNC' THEN SUBSTR (jioa.attribute3, 1, 3) WHEN
+          'IOC99' THEN NULL WHEN
+          'STUDENT_GREG' THEN SUBSTR (jioa.attribute4, 1, 3) ELSE
+          CASE SUBSTR (jioa.context, 1, 7) WHEN
+                   'ANNC_SY' THEN SUBSTR (jioa.attribute27, 1, 3) ELSE
+                   NULL END END AS WEIGHT,
+CASE
+          jioa.context WHEN
+          'AN_SPR08' THEN SUBSTR (jioa.attribute71, 1, 1) WHEN
+          'AN_SPR18' THEN SUBSTR (jioa.attribute71, 1, 1) WHEN
+          'ANNC_SCAN_WEB' THEN SUBSTR (jioa.attribute71, 1, 1) WHEN
+          'BULK' THEN SUBSTR (jioa.attribute71, 1, 1) WHEN
+          'CCG003' THEN NULL WHEN
+          'CCG008' THEN SUBSTR (jioa.attribute71, 1, 1) WHEN
+          'CG100' THEN SUBSTR (jioa.attribute71, 1, 1) WHEN
+          'CG120' THEN SUBSTR (jioa.attribute71, 1, 1) WHEN
+          'CG95' THEN SUBSTR (jioa.attribute71, 1, 1) WHEN
+          'CGANNC' THEN SUBSTR (jioa.attribute71, 1, 1) WHEN
+          'IOC99' THEN SUBSTR (jioa.attribute1, 1, 1) WHEN
+          'STUDENT_GREG' THEN SUBSTR (jioa.attribute71, 1, 1)ELSE
+          CASE SUBSTR (jioa.context, 1, 7) WHEN
+                   'ANNC_SY' THEN SUBSTR (jioa.attribute71, 1, 1) ELSE
+                   NULL END END AS GENDER,
+CASE
+          jioa.context WHEN
+          'AN_SPR08' THEN SUBSTR (jioa.attribute113, 1, 12) WHEN
+          'AN_SPR18' THEN SUBSTR (jioa.attribute113, 1, 12) WHEN
+          'ANNC_SCAN_WEB' THEN SUBSTR (jioa.attribute30, 1, 12) WHEN
+          'BULK' THEN SUBSTR (jioa.attribute6, 1, 12) WHEN
+          'CCG003' THEN NULL WHEN
+          'CCG008' THEN SUBSTR (jioa.attribute7, 1, 12) WHEN
+          'CG100' THEN SUBSTR (jioa.attribute7, 1, 12) WHEN
+          'CG120' THEN SUBSTR (jioa.attribute7, 1, 12) WHEN
+          'CG95' THEN SUBSTR (jioa.attribute8, 1, 12) WHEN
+          'CGANNC' THEN SUBSTR (jioa.attribute5, 1, 12) WHEN
+          'IOC99' THEN NULL WHEN
+          'STUDENT_GREG' THEN SUBSTR (jioa.attribute7, 1, 12) ELSE
+          CASE SUBSTR (jioa.context, 1, 7) WHEN
+                   'ANNC_SY' THEN SUBSTR (jioa.attribute113, 1, 12) ELSE
+                   NULL END END AS CAP_SIZE,
+CASE
+          jioa.context WHEN
+          'AN_SPR08' THEN SUBSTR (jioa.attribute69, 1, 1) WHEN
+          'AN_SPR18' THEN SUBSTR (jioa.attribute69, 1, 1) WHEN
+          'ANNC_SCAN_WEB' THEN SUBSTR (jioa.attribute29, 1, 1) WHEN
+          'BULK' THEN NULL WHEN
+          'CCG003' THEN NULL WHEN
+          'CCG008' THEN SUBSTR (jioa.attribute3, 1, 1) WHEN
+          'CG100' THEN NULL WHEN
+          'CG120' THEN SUBSTR (jioa.attribute5, 1, 1) WHEN
+          'CG95' THEN NULL WHEN
+          'CGANNC' THEN NULL WHEN
+          'IOC99' THEN NULL WHEN
+          'STUDENT_GREG' THEN SUBSTR (jioa.attribute5, 1, 1) ELSE
+          CASE SUBSTR (jioa.context, 1, 7) WHEN
+                   'ANNC_SY' THEN SUBSTR (jioa.attribute29, 1, 1) ELSE
+                   NULL END END  AS SPECIAL_GWN_SIZES,
+ CASE jioa.context WHEN 'JLRY_STD' THEN SUBSTR (jioa.attribute73, 1, 4) ELSE NULL END AS ENGRAVE_OPTION_CODE,
+ CASE jioa.context WHEN 'JLRY_STD' THEN SUBSTR (jioa.attribute96, 1, 30) ELSE NULL END AS JLRY_DEFAULT_GROUP,
+CASE
+          jioa.context WHEN
+          'ANNC_URBAN' THEN SUBSTR (jioa.attribute117, 1, 1) ELSE
+          CASE SUBSTR (jioa.context, 1, 7) WHEN
+                   'ANNC_SY' THEN SUBSTR (jioa.attribute117, 1, 1) ELSE
+                   NULL END END AS DROPSHIP_REP_OVERRIDE_FLAG,
+jioa.attribute120 AS DESIGN_ID,                                      /* design_id */
+jioa.attribute249 AS ORDERED_BY_NAME,                                  /*ordered_by_name*/
+jioa.attribute203 AS ORIGINAL_WEB_QUOTE                                           /* WQD */               
 FROM joe_indv_orders_all jioa
 INNER JOIN joe_order_headers_all joha
 ON jioa.order_header_id = joha.order_header_id
