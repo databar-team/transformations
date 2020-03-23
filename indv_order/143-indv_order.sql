@@ -38,6 +38,7 @@ jioa.use_profile_flag as USE_PROFILE_FLAG,
 jioa.creation_date as IO_CREATION_DATE,
                    '"' || REPLACE (jioa.salesrep_notes, '"', '""') || '"' as COMMENTS,
 jioa.attribute39 as NAMELIST_FILE,
+ CASE jioa.context WHEN 'LFXP_REPAIR' THEN jioa.attribute29 ELSE NULL END AS ORIGINAL_ITEM_ORDERED,
 /*
 " SUBSTR (CASE jiodfv.context_value WHEN 'DIPL' THEN jiodfv.grad_pres_date ELSE NULL END, 1, 150) as GRAD_PRES_DATE,
 "
