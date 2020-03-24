@@ -176,7 +176,8 @@ ON     jcl_sale.lookup_code = jioa.salesrep_tx_type
 AND jcl_sale.lookup_type = 'SALESREP_TX_TYPES'
 LEFT JOIN rawdb.jfn_common_lookups jcl_ship
 ON     jcl_ship.lookup_code = jioa.ship_method_code
-AND jcl_ship.lookup_type = 'FREIGHT_VENDORS'LEFT JOIN
+AND jcl_ship.lookup_type = 'FREIGHT_VENDORS'
+LEFT JOIN
 (SELECT indv_order_id,
 context    AS context_value,
 attribute2 AS grad_pres_date,

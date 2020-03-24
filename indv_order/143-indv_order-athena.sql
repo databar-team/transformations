@@ -182,7 +182,7 @@ LEFT JOIN jfn_common_lookups jcl_ship
 ON     jcl_ship.lookup_code = jioa.ship_method_code
 AND jcl_ship.lookup_type = 'FREIGHT_VENDORS'
 
-
+LEFT JOIN
 (SELECT indv_order_id,
 context    AS context_value,
 attribute2 AS grad_pres_date,
