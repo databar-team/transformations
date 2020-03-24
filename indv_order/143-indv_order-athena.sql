@@ -183,23 +183,19 @@ ON     jcl_ship.lookup_code = jioa.ship_method_code
 AND jcl_ship.lookup_type = 'FREIGHT_VENDORS'
 
 
-
-/*LEFT JOIN
 (SELECT indv_order_id,
 context    AS context_value,
 attribute2 AS grad_pres_date,
 attribute3 AS using_contemporary_dateline
-FROM joe_indv_orders_all
+FROM rawdb.joe_indv_orders_all
 WHERE coalesce (
                   ORG_ID,
                   coalesce (
                      cast (
-                   CASE SUBSTR (USERENV ('CLIENT_INFO'), 1, 1) WHEN ' ' THEN NULL ELSE SUBSTR (USERENV ('CLIENT_INFO'), 1, 10) END as bigint),
+                   CASE '103' WHEN ' ' THEN NULL ELSE '103' END as bigint),
                      -99)) =
                   coalesce (
                      cast (
-                    CASE SUBSTR (USERENV ('CLIENT_INFO'), 1, 1) WHEN ' ' THEN NULL ELSE SUBSTR (USERENV ('CLIENT_INFO'), 1, 10) END as bigint),
-                     -99))
-jiodfv
+                    CASE '103' WHEN ' ' THEN NULL ELSE '103' END as bigint),
+                     -99)) jiodfv
 ON jiodfv.indv_order_id = jioa.indv_order_id
-*/
