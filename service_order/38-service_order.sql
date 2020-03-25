@@ -144,34 +144,44 @@ WHERE site_use_code IN ('BILL_TO', 'SOLD_TO', 'SHIP_TO')
 GROUP BY service_order_id) su
 ON jso.service_order_id = su.service_order_id
 LEFT JOIN
-(  SELECT jsa.service_order_id,
-MAX (com1_salesrep_id) max_salesrep_id,
-MAX (GREATEST (jtaa.last_update_date, jtaa.start_date))
-max_last_update_date
-FROM rawdb.jfi_territory_assignments_all jtaa,
-rawdb.joe_service_orders          jso,
-rawdb.joe_so_addresses            jsa
-WHERE     jso.service_order_id = jsa.service_order_id
-AND jsa.site_use_code = 'SOLD_TO'
-AND jso.customer_id = jtaa.customer_id
-AND jso.assignment_type = jtaa.assignment_type
-
-AND jsa.site_use_id = jtaa.site_use_id
-GROUP BY jsa.service_order_id) rep
+(SELECT jsa.service_order_id,
+        MAX (com1_salesrep_id) max_salesrep_id,
+        MAX (GREATEST (jtaa.last_update_date, jtaa.start_date))
+        max_last_update_date
+    FROM 
+        rawdb.jfi_territory_assignments_all jtaa
+    inner join
+        rawdb.joe_service_orders          jso
+    ON
+        jso.assignment_type = jtaa.assignment_type  AND jso.customer_id = jtaa.customer_id
+ 
+    inner join
+        rawdb.joe_so_addresses            jsa
+    on     
+        jso.service_order_id = jsa.service_order_id
+        
+        AND jsa.site_use_id = jtaa.site_use_id
+    WHERE
+        jsa.site_use_code = 'SOLD_TO'
+    GROUP BY 
+        jsa.service_order_id) rep
 ON jso.service_order_id = rep.service_order_id
 LEFT JOIN
 (SELECT B.AGREEMENT_ID,
-B.AGREEMENT_NUM,
-B.AGREEMENT_TYPE_CODE,
-B.PRICE_LIST_ID,
-B.TERM_ID,
-B.START_DATE_ACTIVE,
-B.END_DATE_ACTIVE,
-T.NAME,
-B.LAST_UPDATE_DATE
-FROM rawdb.OE_AGREEMENTS_TL T, rawdb.OE_AGREEMENTS_B B
-WHERE     B.AGREEMENT_ID = T.AGREEMENT_ID
-AND T.LANGUAGE = 'US') oa
+               B.AGREEMENT_NUM,
+               B.AGREEMENT_TYPE_CODE,
+               B.PRICE_LIST_ID,
+               B.TERM_ID,
+               B.START_DATE_ACTIVE,
+               B.END_DATE_ACTIVE,
+               T.NAME,
+               B.LAST_UPDATE_DATE
+          FROM rawdb.OE_AGREEMENTS_TL T
+          INNER JOIN
+           rawdb.OE_AGREEMENTS_B B
+          ON    B.AGREEMENT_ID = T.AGREEMENT_ID
+           WHERE
+            T.LANGUAGE = 'US') oa
 ON jso.agreement_id = oa.agreement_id
 LEFT JOIN rawdb.hz_cust_accounts hca
 ON jso.customer_id = hca.cust_account_id
@@ -212,15 +222,17 @@ jsoh.service_order_id, /*use distinct because service_order_id can have exact sa
 fndu1.user_name,
 date_format(jsoh.creation_date, '%d-%m-%Y  %H:%i:%s')
 creation_date
-FROM rawdb.fnd_user fndu1, rawdb.joe_so_status_history jsoh
-WHERE     jsoh.status = 'ACTIVE'
-AND jsoh.creation_date =
+FROM rawdb.fnd_user fndu1
+INNER JOIN rawdb.joe_so_status_history jsoh
+
+on jsoh.creation_date =
 (SELECT MIN (jsoh1.creation_date)
 FROM rawdb.joe_so_status_history jsoh1
 WHERE     jsoh1.service_order_id =
 jsoh.service_order_id
 AND status = 'ACTIVE')
-AND fndu1.user_id = jsoh.created_by) so_creation
+AND fndu1.user_id = jsoh.created_by
+WHERE     jsoh.status = 'ACTIVE') so_creation
 ON so_creation.service_order_id = jso.service_order_id
 limit 10
              
