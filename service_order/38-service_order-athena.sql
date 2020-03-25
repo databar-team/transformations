@@ -353,7 +353,37 @@ CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN STRPOS (jso.service
       ELSE
          NULL 
    END
-   as HOMESHIP_FLAG, jso.context as CONTEXT, jso.attribute1 as ATTRIBUTE1, jso.attribute2 as ATTRIBUTE2, jso.attribute3 as ATTRIBUTE3, jso.attribute4 as ATTRIBUTE4, jso.attribute5 as ATTRIBUTE5, jso.attribute6 as ATTRIBUTE6, jso.attribute7 as ATTRIBUTE7, jso.attribute8 as ATTRIBUTE8, jso.attribute9 as ATTRIBUTE9, jso.attribute10 as ATTRIBUTE10, jso.attribute11 as ATTRIBUTE11, jso.attribute12 as ATTRIBUTE12, jso.attribute13 as ATTRIBUTE13, jso.attribute14 as ATTRIBUTE14, REPLACE (jso.attribute15, CHR (10), '') as ATTRIBUTE15, jso.attribute16 as ATTRIBUTE16, jso.attribute17 as ATTRIBUTE17, jso.attribute18 as ATTRIBUTE18, jso.attribute19 as ATTRIBUTE19, jso.attribute20 as ATTRIBUTE20, jso.attribute21 as ATTRIBUTE21, jso.attribute22 as ATTRIBUTE22, jso.attribute23 as ATTRIBUTE23, jso.attribute24 as ATTRIBUTE24, jso.attribute25 as ATTRIBUTE25, jso.attribute26 as ATTRIBUTE26, jso.attribute27 as ATTRIBUTE27, jso.attribute28 as ATTRIBUTE28, jso.attribute29 as ATTRIBUTE29, jso.attribute30 as ATTRIBUTE30 
+   as HOMESHIP_FLAG, jso.context as CONTEXT, 
+jso.attribute1 as ATTRIBUTE1, 
+jso.attribute2 as ATTRIBUTE2, 
+jso.attribute3 as ATTRIBUTE3, 
+jso.attribute4 as ATTRIBUTE4, 
+jso.attribute5 as ATTRIBUTE5, 
+jso.attribute6 as ATTRIBUTE6, 
+jso.attribute7 as ATTRIBUTE7, 
+jso.attribute8 as ATTRIBUTE8, 
+jso.attribute9 as ATTRIBUTE9, 
+jso.attribute10 as ATTRIBUTE10, 
+jso.attribute11 as ATTRIBUTE11, 
+jso.attribute12 as ATTRIBUTE12, 
+jso.attribute13 as ATTRIBUTE13, 
+jso.attribute14 as ATTRIBUTE14, 
+REPLACE (jso.attribute15, CHR (10), '') as ATTRIBUTE15, 
+jso.attribute16 as ATTRIBUTE16, 
+jso.attribute17 as ATTRIBUTE17, 
+jso.attribute18 as ATTRIBUTE18, 
+jso.attribute19 as ATTRIBUTE19, 
+jso.attribute20 as ATTRIBUTE20, 
+jso.attribute21 as ATTRIBUTE21, 
+jso.attribute22 as ATTRIBUTE22, 
+jso.attribute23 as ATTRIBUTE23, 
+jso.attribute24 as ATTRIBUTE24, 
+jso.attribute25 as ATTRIBUTE25, 
+jso.attribute26 as ATTRIBUTE26, 
+jso.attribute27 as ATTRIBUTE27, 
+jso.attribute28 as ATTRIBUTE28, 
+jso.attribute29 as ATTRIBUTE29, 
+jso.attribute30 as ATTRIBUTE30 
 FROM
    rawdb.joe_service_orders jso 
    INNER JOIN
