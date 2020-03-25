@@ -155,7 +155,12 @@ SELECT
    AS RECG_CRM, 	/*crm*/
    /*CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN SUBSTR (jso.service_order_type, '-') > 0 THEN SUBSTR (jso.service_order_type, 1, (SUBSTR (jso.service_order_type, '-') - 1)) ELSE jso.service_order_type END ELSE NULL END as SERVICE_ORDER_TYPE1,
 CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN SUBSTR (jso.service_order_type, '-') > 0 THEN SUBSTR (jso.service_order_type, (SUBSTR (jso.service_order_type, '-') + 1)) ELSE NULL END ELSE NULL END AS SERVICE_ORDER_TYPE2,*/
-   jso.salesrep_tx_type as SALES_REP_TRANSACTION_TYPE, fndu.user_name as CREATED_BY, date_format(jso.creation_date, '%d-%m-%Y  %H:%i:%s') as CREATION_DATE, so_creation.user_name as FIRST_ACTIVATED_BY, date(so_creation.creation_date) as FIRST_ACTIVATION_DATE, jso.price_builder_code as PRICE_BUILDER, 
+   jso.salesrep_tx_type as SALES_REP_TRANSACTION_TYPE, 
+   fndu.user_name as CREATED_BY, 
+   date_format(jso.creation_date, '%d-%m-%Y  %H:%i:%s') as CREATION_DATE, 
+   so_creation.user_name as FIRST_ACTIVATED_BY, 
+   so_creation.creation_date as FIRST_ACTIVATION_DATE, 
+   jso.price_builder_code as PRICE_BUILDER, 
    CASE
       WHEN
          jso.context = 'DIPL' 
