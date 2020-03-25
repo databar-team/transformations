@@ -573,17 +573,17 @@ FROM
             date_format(jsoh.creation_date, '%d-%m-%Y  %H:%i:%s') creation_date 
          FROM
             rawdb.fnd_user fndu1 
-            INNER JOIN
+            RIGHT OUTER JOIN
                rawdb.joe_so_status_history jsoh 
                on jsoh.creation_date = 
                (
                   SELECT
                      MIN (jsoh1.creation_date) 
                   FROM
-                     rawdb.joe_so_status_history jsoh1 
-                  WHERE
+                     rawdb.joe_so_status_history jsoh1
+                 INNER JOIN rawdb.joe_so_status_history jsoh 
+                  ON
                      jsoh1.service_order_id = jsoh.service_order_id 
-                     AND status = 'ACTIVE'
                )
                AND fndu1.user_id = jsoh.created_by 
          WHERE
