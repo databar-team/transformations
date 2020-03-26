@@ -316,7 +316,9 @@ CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN STRPOS (jso.service
       ELSE
          NULL 
    END
-, CHR (10), CHR (32))) as GT_PO_NUMBER_REQUIRED, REPLACE (jso.attribute15, CHR (10), '') as REGALIA_EMAIL_ADDRESS, UPPER (REPLACE (
+, CHR (10), CHR (32))) as GT_PO_NUMBER_REQUIRED, 
+REPLACE (jso.attribute15, CHR (10), '') as REGALIA_EMAIL_ADDRESS, 
+UPPER (REPLACE (
    CASE
       WHEN
          jso.context = 'DIPL' 
@@ -342,7 +344,8 @@ CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN STRPOS (jso.service
       ELSE
          NULL 
    END
-   AS CONTACT_EMAIL_ADDRESS, UPPER (REPLACE (
+   AS CONTACT_EMAIL_ADDRESS, 
+   UPPER (REPLACE (
    CASE
       WHEN
          jso.context = 'DIPL' 
@@ -355,7 +358,8 @@ CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN STRPOS (jso.service
       ELSE
          NULL 
    END
-, CHR (10), CHR (32))) AS CONTACT_PHONE, UPPER (REPLACE (
+, CHR (10), CHR (32))) AS CONTACT_PHONE, 
+UPPER (REPLACE (
    CASE
       WHEN
          jso.context = 'DIPL' 
@@ -373,6 +377,7 @@ CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN STRPOS (jso.service
          jso.attribute5 
    END
    AS SCHEDULING_OFFSET_DAYS, 
+   CASE WHEN jso.context = 'DIPL' THEN jso.attribute12 WHEN jso.context = 'GREG' THEN jso.attribute12 ELSE NULL END as HOMESHIP_FLAG,
    CASE
       WHEN
          jso.context = 'DIPL' 
@@ -581,11 +586,13 @@ FROM
             B.TERM_ID,
             T.NAME 
          FROM
-            rawdb.RA_TERMS_TL T,
+            rawdb.RA_TERMS_TL T
+         INNER JOIN
             rawdb.RA_TERMS_B B 
-         WHERE
+         on
             B.TERM_ID = T.TERM_ID 
-            AND T.LANGUAGE = 'US'
+         
+         where T.LANGUAGE = 'US'
       )
       rt 
       ON rt.term_id = oa.term_id 

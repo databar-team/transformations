@@ -1,128 +1,429 @@
-sql = """SELECT jso.service_order_id as SERVICE_ORDER_NUMBER,
-jso.description as SERVICE_ORDER_DESCRIPTION,
-jso.service_order_type as SERVICE_ORDER_TYPE,
-jso.assignment_type as ASSIGNMENT_TYPE,
-cast(coalesce(jrs.salesrep_number) as bigint) as SALES_REP_NUMBER,
-hca.account_number as ORACLE_CUSTOMER_NUMBER,
-jso.order_group as ORDER_GROUP,
-jso.event as EVENT_CODE,
-jcl_event.meaning as EVENT_DESC,
-jso.so_program as PROGRAM_CODE, 
-s_program.description as PROGRAM_DESC,
-jso.status as STATUS,
-jso.reason as REASON,
-REPLACE (SUBSTR (jso.comments, 1, 750), CHR (9), CHR (32)) AS COMMENTS,
-jso.sales_year as SALES_YEAR,
-su.ship_to_site_use_id as SHIP_TO_ADDRESS_ID,
-su.sold_to_site_use_id as SOLD_TO_ADDRESS_ID,
-su.bill_to_site_use_id as BILL_TO_ADDRESS_ID,
+sql = """SELECT
+   jso.service_order_id as SERVICE_ORDER_NUMBER,
+   jso.description as SERVICE_ORDER_DESCRIPTION,
+   jso.service_order_type as SERVICE_ORDER_TYPE,
+   jso.assignment_type as ASSIGNMENT_TYPE,
+   cast(coalesce(jrs.salesrep_number) as bigint) as SALES_REP_NUMBER,
+   hca.account_number as ORACLE_CUSTOMER_NUMBER,
+   jso.order_group as ORDER_GROUP,
+   jso.event as EVENT_CODE,
+   jcl_event.meaning as EVENT_DESC,
+   jso.so_program as PROGRAM_CODE,
+   s_program.description as PROGRAM_DESC,
+   jso.status as STATUS,
+   jso.reason as REASON,
+   REPLACE (SUBSTR (jso.comments, 1, 750), CHR (9), CHR (32)) AS COMMENTS,
+   jso.sales_year as SALES_YEAR,
+   su.ship_to_site_use_id as SHIP_TO_ADDRESS_ID,
+   su.sold_to_site_use_id as SOLD_TO_ADDRESS_ID,
+   su.bill_to_site_use_id as BILL_TO_ADDRESS_ID,
 
-jso.purchase_order_num as PURCHASE_ORDER_NUMBER,
-jso.copied_from_service_order_id as COPY_FROM_SERVICE_ORDER_NUMBER,
-jso.orig_system_source as ORIG_SYSTEM_SOURCE,
-jso.orig_system_reference as ORIG_SYSTEM_REFERENCE,
-jso.assigned_customer_service_team as ASSIGNED_CUSTOMER_SERVICE_TEAM,
-jcl_team.meaning as CUSTOMER_SERVICE_TEAM_NAME,
-jso.assigned_customer_service_rep as ASSIGNED_CUSTOMER_SERVICE_REP,
-fu.user_name as CUSTOMER_SERVICE_REP_NAME,
-date_format(jso.start_date_active, 'dd-MM-yyyy') as start_date_active,
-date_format(jso.end_date_active, 'dd-MM-yyyy') as END_DATE_ACTIVE,
-oa.name as AGREEMENT_NUMBER,
-oa.agreement_num as AGREEMENT_NAME,
-oa.agreement_type_code as AGREEMENT_TYPE_CODE,
-ol.meaning as AGREEMENT_TYPE_DESC,
-opl.name as AGREEMENT_PRICE_LIST,
-rt.name as AGREEMENT_TERMS,
-date_format(oa.start_date_active, 'dd-MM-yyyy') as AGREEMENT_START_DATE_ACTIVE,
-date_format(oa.end_date_active, 'dd-MM-yyyy') as AGREEMENT_END_DATE_ACTIVE,
-jso.product_offering_usage as PRODUCT_OFFERING_USAGE,
-jso.pricing_method as PRICING_METHOD,
-SUBSTR (jso.special_instructions, 1, 2000) as SPECIAL_INSTRUCTIONS,
-jcl_pack.meaning as PACKING_METHOD,
-REPLACE(jso.packing_instructions,CHR(9),CHR(32)) as PACKING_INSTRUCTIONS,
-jso.ship_method_code as SHIP_METHOD_CODE, 
-jcl_ship.meaning as SHIP_METHOD_DESC,
-REPLACE (jso.shipping_instructions, CHR (9), CHR (32)) as SHIPPING_INSTRUCTIONS,
-jso.freight_terms_code as FREIGHT_TERMS,
-jso.invoice_frequency as INVOICE_FREQUENCY,
-REPLACE (jso.invoice_comments, CHR (9), CHR (32)) as INVOICE_COMMENTS,
-jso.commission_program_code as COMMISSION_PROGRAM,
-jso.primary_service_order_flag as PRIMARY_SERVICE_ORDER_FLAG,
-jso.annual_roll_flag as ANNUAL_ROLL_FLAG,
-jso.order_line_summarization_flag as ORDER_LINE_SUMMARIZATION_FLAG,
-jso.warehouse_id as WAREHOUSE_ID,
-jso.consolidated_ship_warehouse_id as CONSOLIDATED_SHIP_WAREHOUSE_ID,
-CASE WHEN jso.context = 'RECG' THEN jsojd.attribute1 ELSE NULL END AS RECG_TAPE_FREQUENCIES,
-CASE WHEN jso.context = 'RECG' THEN jsojd.attribute2 ELSE NULL END AS RECG_SOLICIT_FREQUENCIES,
-CASE WHEN jso.context = 'RECG' THEN jsojd.attribute3 ELSE NULL END AS RECG_SHIP_FREQUENCIES,
-CASE WHEN jso.context = 'RECG' THEN jsojd.attribute4 ELSE NULL END AS RECG_DOWN_SELECT,
-CASE WHEN jso.context = 'RECG' THEN CASE WHEN jsojd.attribute5 = 'NO' THEN 'N' WHEN jsojd.attribute5 = 'YES' THEN 'Y' ELSE jsojd.attribute5 END ELSE NULL END AS RECG_AWARD_WO_LOGO,
-CASE WHEN jso.context = 'RECG' THEN jsojd.attribute6 ELSE NULL END AS RECG_DEDICATED_800_NUMBER, /*dedicated_800_number*/
-CASE WHEN jso.context = 'RECG' THEN jsojd.attribute7 ELSE NULL END AS RECG_FAX_NUMBER,     /*fax_number*/
-CASE WHEN jso.context = 'RECG' THEN jsojd.attribute8 ELSE NULL END AS RECG_IVR_NUMBER,     /*ivr_number*/
-CASE WHEN jso.context = 'RECG' THEN jsojd.attribute9 ELSE NULL END AS RECG_WEB_SITE,     /*web_site*/
-CASE WHEN jso.context = 'RECG' THEN jsojd.attribute10 ELSE NULL END AS RECG_CRM,          /*crm*/
-CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN INSTR (jso.service_order_type, '-') > 0 THEN SUBSTR (jso.service_order_type, 1, (INSTR (jso.service_order_type, '-') - 1)) ELSE jso.service_order_type END ELSE NULL END as SERVICE_ORDER_TYPE1,
+      ship_to_contacts.last_name ||
+      CASE
+         WHEN
+            ship_to_contacts.first_name = NULL
+         THEN
+            NULL 
+         ELSE
+            (', ' || ship_to_contacts.first_name )
+      END AS SHIP_TO_CONTACT,
+    
+      sold_to_contacts.last_name ||
+      CASE
+         WHEN
+            sold_to_contacts.first_name = NULL
+         THEN
+            NULL 
+         ELSE
+            (', ' || sold_to_contacts.first_name )
+      END AS SOLD_TO_CONTACT,
+ 
+      bill_to_contacts.last_name ||
+      CASE
+         WHEN
+            bill_to_contacts.first_name = NULL
+         THEN
+            NULL 
+         ELSE
+            (', ' || bill_to_contacts.first_name )
+      END AS BILL_TO_CONTACTS,
+
+
+   jso.purchase_order_num as PURCHASE_ORDER_NUMBER,
+   jso.copied_from_service_order_id as COPY_FROM_SERVICE_ORDER_NUMBER,
+   jso.orig_system_source as ORIG_SYSTEM_SOURCE,
+   jso.orig_system_reference as ORIG_SYSTEM_REFERENCE,
+   jso.assigned_customer_service_team as ASSIGNED_CUSTOMER_SERVICE_TEAM,
+   jcl_team.meaning as CUSTOMER_SERVICE_TEAM_NAME,
+   jso.assigned_customer_service_rep as ASSIGNED_CUSTOMER_SERVICE_REP,
+   fu.user_name as CUSTOMER_SERVICE_REP_NAME,
+   date_format(jso.start_date_active, 'dd-MM-yyyy') as start_date_active,
+   date_format(jso.end_date_active, 'dd-MM-yyyy') as END_DATE_ACTIVE,
+   oa.name as AGREEMENT_NUMBER,
+   oa.agreement_num as AGREEMENT_NAME,
+   oa.agreement_type_code as AGREEMENT_TYPE_CODE,
+   ol.meaning as AGREEMENT_TYPE_DESC,
+   opl.name as AGREEMENT_PRICE_LIST,
+   rt.name as AGREEMENT_TERMS,
+   date_format(oa.start_date_active, 'dd-MM-yyyy') as AGREEMENT_START_DATE_ACTIVE,
+   date_format(oa.end_date_active, 'dd-MM-yyyy') as AGREEMENT_END_DATE_ACTIVE,
+   jso.product_offering_usage as PRODUCT_OFFERING_USAGE,
+   jso.pricing_method as PRICING_METHOD,
+   SUBSTR (jso.special_instructions, 1, 2000) as SPECIAL_INSTRUCTIONS,
+   jcl_pack.meaning as PACKING_METHOD,
+   REPLACE(jso.packing_instructions, CHR(9), CHR(32)) as PACKING_INSTRUCTIONS,
+   jso.ship_method_code as SHIP_METHOD_CODE,
+   jcl_ship.meaning as SHIP_METHOD_DESC,
+   REPLACE (jso.shipping_instructions, CHR (9), CHR (32)) as SHIPPING_INSTRUCTIONS,
+   jso.freight_terms_code as FREIGHT_TERMS,
+   jso.invoice_frequency as INVOICE_FREQUENCY,
+   REPLACE (jso.invoice_comments, CHR (9), CHR (32)) as INVOICE_COMMENTS,
+   jso.commission_program_code as COMMISSION_PROGRAM,
+   jso.primary_service_order_flag as PRIMARY_SERVICE_ORDER_FLAG,
+   jso.annual_roll_flag as ANNUAL_ROLL_FLAG,
+   jso.order_line_summarization_flag as ORDER_LINE_SUMMARIZATION_FLAG,
+   jso.warehouse_id as WAREHOUSE_ID,
+   jso.consolidated_ship_warehouse_id as CONSOLIDATED_SHIP_WAREHOUSE_ID,
+   CASE
+      WHEN
+         jso.context = 'RECG' 
+      THEN
+         jsojd.attribute1 
+      ELSE
+         NULL 
+   END
+   AS RECG_TAPE_FREQUENCIES, 
+   CASE
+      WHEN
+         jso.context = 'RECG' 
+      THEN
+         jsojd.attribute2 
+      ELSE
+         NULL 
+   END
+   AS RECG_SOLICIT_FREQUENCIES, 
+   CASE
+      WHEN
+         jso.context = 'RECG' 
+      THEN
+         jsojd.attribute3 
+      ELSE
+         NULL 
+   END
+   AS RECG_SHIP_FREQUENCIES, 
+   CASE
+      WHEN
+         jso.context = 'RECG' 
+      THEN
+         jsojd.attribute4 
+      ELSE
+         NULL 
+   END
+   AS RECG_DOWN_SELECT, 
+   CASE
+      WHEN
+         jso.context = 'RECG' 
+      THEN
+         CASE
+            WHEN
+               jsojd.attribute5 = 'NO' 
+            THEN
+               'N' 
+            WHEN
+               jsojd.attribute5 = 'YES' 
+            THEN
+               'Y' 
+            ELSE
+               jsojd.attribute5 
+         END
+         ELSE
+            NULL 
+   END
+   AS RECG_AWARD_WO_LOGO, 
+   CASE
+      WHEN
+         jso.context = 'RECG' 
+      THEN
+         jsojd.attribute6 
+      ELSE
+         NULL 
+   END
+   AS RECG_DEDICATED_800_NUMBER, 	/*dedicated_800_number*/
+   CASE
+      WHEN
+         jso.context = 'RECG' 
+      THEN
+         jsojd.attribute7 
+      ELSE
+         NULL 
+   END
+   AS RECG_FAX_NUMBER, 	/*fax_number*/
+   CASE
+      WHEN
+         jso.context = 'RECG' 
+      THEN
+         jsojd.attribute8 
+      ELSE
+         NULL 
+   END
+   AS RECG_IVR_NUMBER, 	/*ivr_number*/
+   CASE
+      WHEN
+         jso.context = 'RECG' 
+      THEN
+         jsojd.attribute9 
+      ELSE
+         NULL 
+   END
+   AS RECG_WEB_SITE, 	/*web_site*/
+   CASE
+      WHEN
+         jso.context = 'RECG' 
+      THEN
+         jsojd.attribute10 
+      ELSE
+         NULL 
+   END
+   AS RECG_CRM, 	/*crm*/
+   CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN INSTR (jso.service_order_type, '-') > 0 THEN SUBSTR (jso.service_order_type, 1, (INSTR (jso.service_order_type, '-') - 1)) ELSE jso.service_order_type END ELSE NULL END as SERVICE_ORDER_TYPE1,
 CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN INSTR (jso.service_order_type, '-') > 0 THEN SUBSTR (jso.service_order_type, (INSTR (jso.service_order_type, '-') + 1)) ELSE NULL END ELSE NULL END AS SERVICE_ORDER_TYPE2,
-jso.salesrep_tx_type as SALES_REP_TRANSACTION_TYPE,
-fndu.user_name as CREATED_BY,
-date_format(jso.creation_date, 'dd-MM-yyyy HH:mm:ss') as CREATION_DATE,
-/*so_creation.user_name as FIRST_ACTIVATED_BY,
-so_creation.creation_date as FIRST_ACTIVATION_DATE,
-jso.price_builder_code as PRICE_BUILDER,*/
-CASE WHEN jso.context = 'DIPL' THEN jsojd.attribute10 ELSE NULL END AS DIPL_ROLLED_FROM_SERVICE_ORDER, /*rolled_from_service_order*/
-CASE WHEN jso.context = 'DIPL' THEN jsojd.attribute11 ELSE NULL END AS DIPL_GROUPING,     /*GROUPING*/
-CASE WHEN jso.context = 'YBMS' THEN jsojd.attribute1 ELSE NULL END as YBMS_JOB_NUMBER,    /*job_number*/
-CASE WHEN jso.context = 'YBMS' THEN jsojd.attribute2 ELSE NULL END as YBMS_YEARBOOK_YEAR, /*yearbook_year*/
-CASE WHEN jso.context = 'YBMS' THEN jsojd.attribute3 ELSE NULL END as YBMS_PLANT,        /*plant*/
-CASE WHEN jso.context = 'YBMS' THEN jsojd.attribute4 ELSE NULL END as YBMS_PROGRAM,       /*program*/
-CASE WHEN jso.context = 'YBMS' THEN jsojd.attribute5 ELSE NULL END AS YBMS_TRIM_SIZE,     /*trim_size*/
-cast(CASE WHEN jso.context = 'YBMS' THEN jsojd.attribute6 ELSE NULL END as bigint) as YBMS_PAGES,         /*pages*/        /*pages*/
-CASE WHEN jso.context = 'YBMS' THEN jsojd.attribute7 ELSE NULL END as YBMS_COPIES,        /*copies*/
-CASE WHEN jso.context = 'YBMS' THEN jsojd.attribute10 ELSE NULL END AS YBMS_YEARTECH_ONLINE, /*yeartech_online*/
-CASE WHEN jso.context = 'YBMS' THEN jsojd.attribute11 ELSE NULL END as YBMS_CONTRACT_SHIP_DATE, /*contract_ship_date*/
-CASE jso.context WHEN 'ANNC' THEN SUBSTR (jsojd.ATTRIBUTE2 , 1, 1) ELSE NULL END AS ANNC_WEB_CATALOG_FLAG,
-UPPER (REPLACE (CASE WHEN jso.context = 'DIPL' THEN jso.attribute9 WHEN jso.context = 'GREG' THEN jso.attribute10 ELSE NULL END, CHR (10),CHR (32))) as GT_PO_NUMBER_REQUIRED,
-REPLACE (jso.attribute15, CHR (10), '') as REGALIA_EMAIL_ADDRESS,
-UPPER (REPLACE (CASE WHEN jso.context = 'DIPL' THEN jso.attribute14 WHEN jso.context = 'GREG' THEN jso.attribute11 ELSE NULL END, CHR (10),CHR (32))) as CONTACT_NAME,
-CASE WHEN jso.context = 'DIPL' THEN REPLACE (jso.attribute15, CHR (10), '') WHEN jso.context = 'GREG' THEN REPLACE (jso.attribute15, CHR (10), '') ELSE NULL END AS CONTACT_EMAIL_ADDRESS,
-UPPER (REPLACE (CASE WHEN jso.context = 'DIPL' THEN jso.attribute16 WHEN jso.context = 'GREG' THEN jso.attribute14 ELSE NULL END, CHR (10),CHR (32))) AS CONTACT_PHONE,
-UPPER (REPLACE (CASE WHEN jso.context = 'DIPL' THEN jso.attribute17 ELSE NULL END,CHR (10),CHR (32))) AS CONTACT_FAX,
-CASE jso.context WHEN 'ANNC' THEN jso.attribute5 END AS SCHEDULING_OFFSET_DAYS,
-CASE WHEN jso.context = 'DIPL' THEN jso.attribute12 WHEN jso.context = 'GREG' THEN jso.attribute12 ELSE NULL END as HOMESHIP_FLAG,
-jso.context as CONTEXT,
-jso.attribute1 as ATTRIBUTE1,
-jso.attribute2 as ATTRIBUTE2,
-jso.attribute3 as ATTRIBUTE3,
-jso.attribute4 as ATTRIBUTE4,
-jso.attribute5 as ATTRIBUTE5,
-jso.attribute6 as ATTRIBUTE6,
-jso.attribute7 as ATTRIBUTE7,
-jso.attribute8 as ATTRIBUTE8,
-jso.attribute9 as ATTRIBUTE9,
-jso.attribute10 as ATTRIBUTE10,
-jso.attribute11 as ATTRIBUTE11,
-jso.attribute12 as ATTRIBUTE12,
-jso.attribute13 as ATTRIBUTE13,
-jso.attribute14 as ATTRIBUTE14,
-REPLACE (jso.attribute15, CHR (10), '') as ATTRIBUTE15,
-jso.attribute16 as ATTRIBUTE16,
-jso.attribute17 as ATTRIBUTE17,
-jso.attribute18 as ATTRIBUTE18,
-jso.attribute19 as ATTRIBUTE19,
-jso.attribute20 as ATTRIBUTE20,
-jso.attribute21 as ATTRIBUTE21,
-jso.attribute22 as ATTRIBUTE22,
-jso.attribute23 as ATTRIBUTE23,
-jso.attribute24 as ATTRIBUTE24,
-jso.attribute25 as ATTRIBUTE25,
-jso.attribute26 as ATTRIBUTE26,
-jso.attribute27 as ATTRIBUTE27,
-jso.attribute28 as ATTRIBUTE28,
-jso.attribute29 as ATTRIBUTE29,
-jso.attribute30 as ATTRIBUTE30
-FROM rawdb.joe_service_orders jso
-INNER JOIN
+   jso.salesrep_tx_type as SALES_REP_TRANSACTION_TYPE, 
+   fndu.user_name as CREATED_BY, 
+   date_format(jso.creation_date, 'dd-MM-yyyy HH:mm:ss') as CREATION_DATE, 
+   so_creation.user_name as FIRST_ACTIVATED_BY, 
+   so_creation.creation_date as FIRST_ACTIVATION_DATE, 
+   jso.price_builder_code as PRICE_BUILDER, 
+   CASE
+      WHEN
+         jso.context = 'DIPL' 
+      THEN
+         jsojd.attribute10 
+      ELSE
+         NULL 
+   END
+   AS DIPL_ROLLED_FROM_SERVICE_ORDER, 	/*rolled_from_service_order*/
+   CASE
+      WHEN
+         jso.context = 'DIPL' 
+      THEN
+         jsojd.attribute11 
+      ELSE
+         NULL 
+   END
+   AS DIPL_GROUPING, 	/*GROUPING*/
+   CASE
+      WHEN
+         jso.context = 'YBMS' 
+      THEN
+         jsojd.attribute1 
+      ELSE
+         NULL 
+   END
+   as YBMS_JOB_NUMBER, 	/*job_number*/
+   CASE
+      WHEN
+         jso.context = 'YBMS' 
+      THEN
+         jsojd.attribute2 
+      ELSE
+         NULL 
+   END
+   as YBMS_YEARBOOK_YEAR, 	/*yearbook_year*/
+   CASE
+      WHEN
+         jso.context = 'YBMS' 
+      THEN
+         jsojd.attribute3 
+      ELSE
+         NULL 
+   END
+   as YBMS_PLANT, 	/*plant*/
+   CASE
+      WHEN
+         jso.context = 'YBMS' 
+      THEN
+         jsojd.attribute4 
+      ELSE
+         NULL 
+   END
+   as YBMS_PROGRAM, 	/*program*/
+   CASE
+      WHEN
+         jso.context = 'YBMS' 
+      THEN
+         jsojd.attribute5 
+      ELSE
+         NULL 
+   END
+   AS YBMS_TRIM_SIZE, 	/*trim_size*/
+   cast(
+   CASE
+      WHEN
+         jso.context = 'YBMS' 
+      THEN
+         jsojd.attribute6 
+      ELSE
+         NULL 
+   END
+   as bigint) as YBMS_PAGES, 	/*pages*/
+   /*pages*/
+   CASE
+      WHEN
+         jso.context = 'YBMS' 
+      THEN
+         jsojd.attribute7 
+      ELSE
+         NULL 
+   END
+   as YBMS_COPIES, 	/*copies*/
+   CASE
+      WHEN
+         jso.context = 'YBMS' 
+      THEN
+         jsojd.attribute10 
+      ELSE
+         NULL 
+   END
+   AS YBMS_YEARTECH_ONLINE, 	/*yeartech_online*/
+   CASE
+      WHEN
+         jso.context = 'YBMS' 
+      THEN
+         jsojd.attribute11 
+      ELSE
+         NULL 
+   END
+   as YBMS_CONTRACT_SHIP_DATE, 	/*contract_ship_date*/
+   CASE
+      jso.context 
+      WHEN
+         'ANNC' 
+      THEN
+         SUBSTR (jsojd.ATTRIBUTE2 , 1, 1) 
+      ELSE
+         NULL 
+   END
+   AS ANNC_WEB_CATALOG_FLAG, UPPER (REPLACE (
+   CASE
+      WHEN
+         jso.context = 'DIPL' 
+      THEN
+         jso.attribute9 
+      WHEN
+         jso.context = 'GREG' 
+      THEN
+         jso.attribute10 
+      ELSE
+         NULL 
+   END
+, CHR (10), CHR (32))) as GT_PO_NUMBER_REQUIRED, 
+REPLACE (jso.attribute15, CHR (10), '') as REGALIA_EMAIL_ADDRESS, 
+UPPER (REPLACE (
+   CASE
+      WHEN
+         jso.context = 'DIPL' 
+      THEN
+         jso.attribute14 
+      WHEN
+         jso.context = 'GREG' 
+      THEN
+         jso.attribute11 
+      ELSE
+         NULL 
+   END
+, CHR (10), CHR (32))) as CONTACT_NAME, 
+   CASE
+      WHEN
+         jso.context = 'DIPL' 
+      THEN
+         REPLACE (jso.attribute15, CHR (10), '') 
+      WHEN
+         jso.context = 'GREG' 
+      THEN
+         REPLACE (jso.attribute15, CHR (10), '') 
+      ELSE
+         NULL 
+   END
+   AS CONTACT_EMAIL_ADDRESS, 
+   UPPER (REPLACE (
+   CASE
+      WHEN
+         jso.context = 'DIPL' 
+      THEN
+         jso.attribute16 
+      WHEN
+         jso.context = 'GREG' 
+      THEN
+         jso.attribute14 
+      ELSE
+         NULL 
+   END
+, CHR (10), CHR (32))) AS CONTACT_PHONE, 
+UPPER (REPLACE (
+   CASE
+      WHEN
+         jso.context = 'DIPL' 
+      THEN
+         jso.attribute17 
+      ELSE
+         NULL 
+   END
+, CHR (10), CHR (32))) AS CONTACT_FAX, 
+   CASE
+      jso.context 
+      WHEN
+         'ANNC' 
+      THEN
+         jso.attribute5 
+   END
+   AS SCHEDULING_OFFSET_DAYS, 
+   CASE WHEN jso.context = 'DIPL' THEN jso.attribute12 WHEN jso.context = 'GREG' THEN jso.attribute12 ELSE NULL END as HOMESHIP_FLAG,
+   CASE
+      WHEN
+         jso.context = 'DIPL' 
+      THEN
+         jso.attribute12 
+      WHEN
+         jso.context = 'GREG' 
+      THEN
+         jso.attribute12 
+      ELSE
+         NULL 
+   END
+   as HOMESHIP_FLAG, jso.context as CONTEXT, 
+jso.attribute1 as ATTRIBUTE1, 
+jso.attribute2 as ATTRIBUTE2, 
+jso.attribute3 as ATTRIBUTE3, 
+jso.attribute4 as ATTRIBUTE4, 
+jso.attribute5 as ATTRIBUTE5, 
+jso.attribute6 as ATTRIBUTE6, 
+jso.attribute7 as ATTRIBUTE7, 
+jso.attribute8 as ATTRIBUTE8, 
+jso.attribute9 as ATTRIBUTE9, 
+jso.attribute10 as ATTRIBUTE10, 
+jso.attribute11 as ATTRIBUTE11, 
+jso.attribute12 as ATTRIBUTE12, 
+jso.attribute13 as ATTRIBUTE13, 
+jso.attribute14 as ATTRIBUTE14, 
+REPLACE (jso.attribute15, CHR (10), '') as ATTRIBUTE15, 
+jso.attribute16 as ATTRIBUTE16, 
+jso.attribute17 as ATTRIBUTE17, 
+jso.attribute18 as ATTRIBUTE18, 
+jso.attribute19 as ATTRIBUTE19, 
+jso.attribute20 as ATTRIBUTE20, 
+jso.attribute21 as ATTRIBUTE21, 
+jso.attribute22 as ATTRIBUTE22, 
+jso.attribute23 as ATTRIBUTE23, 
+jso.attribute24 as ATTRIBUTE24, 
+jso.attribute25 as ATTRIBUTE25, 
+jso.attribute26 as ATTRIBUTE26, 
+jso.attribute27 as ATTRIBUTE27, 
+jso.attribute28 as ATTRIBUTE28, 
+jso.attribute29 as ATTRIBUTE29, 
+jso.attribute30 as ATTRIBUTE30 
+FROM
+   rawdb.joe_service_orders jso 
+   INNER JOIN
       rawdb.joe_service_orders jsojd 
       ON jso.service_order_id = jsojd.service_order_id 
    LEFT JOIN
@@ -285,11 +586,13 @@ INNER JOIN
             B.TERM_ID,
             T.NAME 
          FROM
-            rawdb.RA_TERMS_TL T,
+            rawdb.RA_TERMS_TL T
+         INNER JOIN
             rawdb.RA_TERMS_B B 
-         WHERE
+         on
             B.TERM_ID = T.TERM_ID 
-            AND T.LANGUAGE = 'US'
+         
+         where T.LANGUAGE = 'US'
       )
       rt 
       ON rt.term_id = oa.term_id 
@@ -300,6 +603,43 @@ INNER JOIN
    LEFT JOIN
       rawdb.fnd_user fndu 
       ON fndu.user_id = jso.created_by 
+   
+
+   LEFT JOIN
+      (
+         SELECT DISTINCT
+            jsoh.service_order_id,
+            /*use distinct because service_order_id can have exact same create date in joe_so_status_history*/
+            fndu1.user_name,
+            date_format(jsoh.creation_date, 'dd-MM-yyyy HH:mm:ss') creation_date 
+         FROM
+            rawdb.fnd_user fndu1 
+            RIGHT OUTER JOIN
+               rawdb.joe_so_status_history jsoh 
+               on jsoh.creation_date = 
+               (
+                  SELECT
+                     MIN (jsoh1.creation_date) 
+                  FROM
+                     rawdb.joe_so_status_history jsoh1
+                 INNER JOIN rawdb.joe_so_status_history jsoh 
+                  ON
+                     jsoh1.service_order_id = jsoh.service_order_id 
+               )
+               AND fndu1.user_id = jsoh.created_by 
+         WHERE
+            jsoh.status = 'ACTIVE'
+      )
+      so_creation 
+      ON so_creation.service_order_id = jso.service_order_id 
+ 
+        LEFT JOIN ra_contacts ship_to_contacts
+          ON ship_to_contacts.contact_id = su.ship_to_contact_id
+       LEFT JOIN ra_contacts sold_to_contacts
+          ON sold_to_contacts.contact_id = su.sold_to_contact_id
+       LEFT JOIN ra_contacts bill_to_contacts
+          ON bill_to_contacts.contact_id = su.bill_to_contact_id
+ 
       limit 10""" 
        
 print (sql) 
