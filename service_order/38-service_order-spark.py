@@ -1,4 +1,39 @@
-sql = """SELECT
+sql = """WITH cte_ra_contacts as (
+   
+   SELECT 
+         ACCT_ROLE.CUST_ACCOUNT_ROLE_ID      AS CONTACT_ID,
+         SUBSTR (PARTY.PERSON_LAST_NAME, 1, 50)  AS last_name,
+         SUBSTR (PARTY.PERSON_FIRST_NAME, 1, 40) AS first_name
+   FROM 
+         rawdb.HZ_CUST_ACCOUNT_ROLES ACCT_ROLE
+   INNER JOIN
+         rawdb.HZ_RELATIONSHIPS      REL
+         ON
+         ACCT_ROLE.PARTY_ID = REL.PARTY_ID
+   INNER JOIN
+         rawdb.HZ_ORG_CONTACTS       ORG_CONT
+         on 
+         ORG_CONT.PARTY_RELATIONSHIP_ID = REL.RELATIONSHIP_ID
+   INNER JOIN 
+         rawdb.HZ_PARTIES            PARTY
+         on 
+         REL.SUBJECT_ID = PARTY.PARTY_ID
+   INNER JOIN 
+         rawdb.HZ_PARTIES            REL_PARTY
+         on 
+         REL.PARTY_ID = REL_PARTY.PARTY_ID
+   INNER JOIN 
+         rawdb.HZ_CUST_ACCOUNTS      ROLE_ACCT
+         on 
+         ROLE_ACCT.PARTY_ID = REL.OBJECT_ID
+         and ACCT_ROLE.CUST_ACCOUNT_ID = ROLE_ACCT.CUST_ACCOUNT_ID
+   WHERE     
+         ACCT_ROLE.ROLE_TYPE = 'CONTACT'
+         AND REL.SUBJECT_TABLE_NAME = 'HZ_PARTIES'
+         AND REL.OBJECT_TABLE_NAME = 'HZ_PARTIES'
+)
+
+SELECT
    jso.service_order_id as SERVICE_ORDER_NUMBER,
    jso.description as SERVICE_ORDER_DESCRIPTION,
    jso.service_order_type as SERVICE_ORDER_TYPE,
@@ -605,39 +640,39 @@ FROM
       ON fndu.user_id = jso.created_by 
    
 
-   LEFT JOIN
+  LEFT JOIN
       (
          SELECT DISTINCT
-            jsoh.service_order_id,
-            /*use distinct because service_order_id can have exact same create date in joe_so_status_history*/
-            fndu1.user_name,
-            date_format(jsoh.creation_date, 'dd-MM-yyyy HH:mm:ss') creation_date 
-         FROM
-            rawdb.fnd_user fndu1 
-            RIGHT OUTER JOIN
-               rawdb.joe_so_status_history jsoh 
-               on jsoh.creation_date = 
-               (
-                  SELECT
-                     MIN (jsoh1.creation_date) 
-                  FROM
-                     rawdb.joe_so_status_history jsoh1
-                 INNER JOIN rawdb.joe_so_status_history jsoh 
-                  ON
-                     jsoh1.service_order_id = jsoh.service_order_id 
-               )
-               AND fndu1.user_id = jsoh.created_by 
-         WHERE
-            jsoh.status = 'ACTIVE'
+	jsoh.service_order_id, 
+	fndu1.user_name,
+	jsoh.creation_date 
+FROM 
+	rawdb.fnd_user fndu1
+LEFT join
+	rawdb.joe_so_status_history jsoh
+ON
+	fndu1.user_id = jsoh.created_by
+WHERE     
+	jsoh.status = 'ACTIVE'
+	AND jsoh.creation_date =
+	(
+			SELECT 
+				MIN (jsoh1.creation_date)  
+			FROM 
+				rawdb.joe_so_status_history jsoh1
+			WHERE     
+				jsoh1.service_order_id = jsoh.service_order_id
+				AND status = 'ACTIVE'
+	)
       )
       so_creation 
       ON so_creation.service_order_id = jso.service_order_id 
  
-        LEFT JOIN ra_contacts ship_to_contacts
+        LEFT JOIN cte_ra_contacts ship_to_contacts
           ON ship_to_contacts.contact_id = su.ship_to_contact_id
-       LEFT JOIN ra_contacts sold_to_contacts
+       LEFT JOIN cte_ra_contacts sold_to_contacts
           ON sold_to_contacts.contact_id = su.sold_to_contact_id
-       LEFT JOIN ra_contacts bill_to_contacts
+       LEFT JOIN cte_ra_contacts bill_to_contacts
           ON bill_to_contacts.contact_id = su.bill_to_contact_id
  
       limit 10""" 
