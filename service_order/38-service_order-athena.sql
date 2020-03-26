@@ -17,6 +17,38 @@ SELECT
    su.ship_to_site_use_id as SHIP_TO_ADDRESS_ID,
    su.sold_to_site_use_id as SOLD_TO_ADDRESS_ID,
    su.bill_to_site_use_id as BILL_TO_ADDRESS_ID,
+
+      ship_to_contacts.last_name ||
+      CASE
+         WHEN
+            ship_to_contacts.first_name = NULL
+         THEN
+            NULL 
+         ELSE
+            (', ' || ship_to_contacts.first_name )
+      END AS SHIP_TO_CONTACT,
+    
+      sold_to_contacts.last_name ||
+      CASE
+         WHEN
+            sold_to_contacts.first_name = NULL
+         THEN
+            NULL 
+         ELSE
+            (', ' || sold_to_contacts.first_name )
+      END AS SOLD_TO_CONTACT,
+ 
+      bill_to_contacts.last_name ||
+      CASE
+         WHEN
+            bill_to_contacts.first_name = NULL
+         THEN
+            NULL 
+         ELSE
+            (', ' || bill_to_contacts.first_name )
+      END AS BILL_TO_CONTACTS,
+
+
    jso.purchase_order_num as PURCHASE_ORDER_NUMBER,
    jso.copied_from_service_order_id as COPY_FROM_SERVICE_ORDER_NUMBER,
    jso.orig_system_source as ORIG_SYSTEM_SOURCE,
@@ -284,7 +316,9 @@ CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN STRPOS (jso.service
       ELSE
          NULL 
    END
-, CHR (10), CHR (32))) as GT_PO_NUMBER_REQUIRED, REPLACE (jso.attribute15, CHR (10), '') as REGALIA_EMAIL_ADDRESS, UPPER (REPLACE (
+, CHR (10), CHR (32))) as GT_PO_NUMBER_REQUIRED, 
+REPLACE (jso.attribute15, CHR (10), '') as REGALIA_EMAIL_ADDRESS, 
+UPPER (REPLACE (
    CASE
       WHEN
          jso.context = 'DIPL' 
@@ -310,7 +344,8 @@ CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN STRPOS (jso.service
       ELSE
          NULL 
    END
-   AS CONTACT_EMAIL_ADDRESS, UPPER (REPLACE (
+   AS CONTACT_EMAIL_ADDRESS, 
+   UPPER (REPLACE (
    CASE
       WHEN
          jso.context = 'DIPL' 
@@ -323,7 +358,8 @@ CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN STRPOS (jso.service
       ELSE
          NULL 
    END
-, CHR (10), CHR (32))) AS CONTACT_PHONE, UPPER (REPLACE (
+, CHR (10), CHR (32))) AS CONTACT_PHONE, 
+UPPER (REPLACE (
    CASE
       WHEN
          jso.context = 'DIPL' 
@@ -341,6 +377,7 @@ CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN STRPOS (jso.service
          jso.attribute5 
    END
    AS SCHEDULING_OFFSET_DAYS, 
+   CASE WHEN jso.context = 'DIPL' THEN jso.attribute12 WHEN jso.context = 'GREG' THEN jso.attribute12 ELSE NULL END as HOMESHIP_FLAG,
    CASE
       WHEN
          jso.context = 'DIPL' 
@@ -549,11 +586,13 @@ FROM
             B.TERM_ID,
             T.NAME 
          FROM
-            rawdb.RA_TERMS_TL T,
+            rawdb.RA_TERMS_TL T
+         INNER JOIN
             rawdb.RA_TERMS_B B 
-         WHERE
+         on
             B.TERM_ID = T.TERM_ID 
-            AND T.LANGUAGE = 'US'
+         
+         where T.LANGUAGE = 'US'
       )
       rt 
       ON rt.term_id = oa.term_id 
@@ -564,6 +603,8 @@ FROM
    LEFT JOIN
       rawdb.fnd_user fndu 
       ON fndu.user_id = jso.created_by 
+   
+
    LEFT JOIN
       (
          SELECT DISTINCT
@@ -590,4 +631,13 @@ FROM
             jsoh.status = 'ACTIVE'
       )
       so_creation 
-      ON so_creation.service_order_id = jso.service_order_id limit 10
+      ON so_creation.service_order_id = jso.service_order_id 
+ 
+        LEFT JOIN ra_contacts ship_to_contacts
+          ON ship_to_contacts.contact_id = su.ship_to_contact_id
+       LEFT JOIN ra_contacts sold_to_contacts
+          ON sold_to_contacts.contact_id = su.sold_to_contact_id
+       LEFT JOIN ra_contacts bill_to_contacts
+          ON bill_to_contacts.contact_id = su.bill_to_contact_id
+ 
+      limit 10;
