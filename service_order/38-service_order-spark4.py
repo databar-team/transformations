@@ -1,10 +1,15 @@
+<<<<<<< HEAD:service_order/38-service_order-spark4.py
 sql = """WITH cte_ra_contacts as (
+=======
+WITH cte_ra_contacts as (
+>>>>>>> c6d68581ea01d7cb8e1547494e89598ad2a0c4b3:service_order/38-service_order-athena-3_26.sql
    
    SELECT 
          ACCT_ROLE.CUST_ACCOUNT_ROLE_ID      AS CONTACT_ID,
          SUBSTR (PARTY.PERSON_LAST_NAME, 1, 50)  AS last_name,
          SUBSTR (PARTY.PERSON_FIRST_NAME, 1, 40) AS first_name
    FROM 
+<<<<<<< HEAD:service_order/38-service_order-spark4.py
          rawdb.HZ_CUST_ACCOUNT_ROLES ACCT_ROLE
    INNER JOIN
          rawdb.HZ_RELATIONSHIPS      REL
@@ -24,6 +29,27 @@ sql = """WITH cte_ra_contacts as (
          REL.PARTY_ID = REL_PARTY.PARTY_ID
    INNER JOIN 
          rawdb.HZ_CUST_ACCOUNTS      ROLE_ACCT
+=======
+         HZ_CUST_ACCOUNT_ROLES ACCT_ROLE
+   INNER JOIN
+         HZ_RELATIONSHIPS      REL
+         ON
+         ACCT_ROLE.PARTY_ID = REL.PARTY_ID
+   INNER JOIN
+         HZ_ORG_CONTACTS       ORG_CONT
+         on 
+         ORG_CONT.PARTY_RELATIONSHIP_ID = REL.RELATIONSHIP_ID
+   INNER JOIN 
+         HZ_PARTIES            PARTY
+         on 
+         REL.SUBJECT_ID = PARTY.PARTY_ID
+   INNER JOIN 
+         HZ_PARTIES            REL_PARTY
+         on 
+         REL.PARTY_ID = REL_PARTY.PARTY_ID
+   INNER JOIN 
+         HZ_CUST_ACCOUNTS      ROLE_ACCT
+>>>>>>> c6d68581ea01d7cb8e1547494e89598ad2a0c4b3:service_order/38-service_order-athena-3_26.sql
          on 
          ROLE_ACCT.PARTY_ID = REL.OBJECT_ID
          and ACCT_ROLE.CUST_ACCOUNT_ID = ROLE_ACCT.CUST_ACCOUNT_ID
@@ -351,9 +377,7 @@ CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN INSTR (jso.service_
       ELSE
          NULL 
    END
-, CHR (10), CHR (32))) as GT_PO_NUMBER_REQUIRED, 
-REPLACE (jso.attribute15, CHR (10), '') as REGALIA_EMAIL_ADDRESS, 
-UPPER (REPLACE (
+, CHR (10), CHR (32))) as GT_PO_NUMBER_REQUIRED, REPLACE (jso.attribute15, CHR (10), '') as REGALIA_EMAIL_ADDRESS, UPPER (REPLACE (
    CASE
       WHEN
          jso.context = 'DIPL' 
@@ -379,8 +403,7 @@ UPPER (REPLACE (
       ELSE
          NULL 
    END
-   AS CONTACT_EMAIL_ADDRESS, 
-   UPPER (REPLACE (
+   AS CONTACT_EMAIL_ADDRESS, UPPER (REPLACE (
    CASE
       WHEN
          jso.context = 'DIPL' 
@@ -393,8 +416,7 @@ UPPER (REPLACE (
       ELSE
          NULL 
    END
-, CHR (10), CHR (32))) AS CONTACT_PHONE, 
-UPPER (REPLACE (
+, CHR (10), CHR (32))) AS CONTACT_PHONE, UPPER (REPLACE (
    CASE
       WHEN
          jso.context = 'DIPL' 
@@ -412,7 +434,6 @@ UPPER (REPLACE (
          jso.attribute5 
    END
    AS SCHEDULING_OFFSET_DAYS, 
-   CASE WHEN jso.context = 'DIPL' THEN jso.attribute12 WHEN jso.context = 'GREG' THEN jso.attribute12 ELSE NULL END as HOMESHIP_FLAG,
    CASE
       WHEN
          jso.context = 'DIPL' 
@@ -621,13 +642,11 @@ FROM
             B.TERM_ID,
             T.NAME 
          FROM
-            rawdb.RA_TERMS_TL T
-         INNER JOIN
+            rawdb.RA_TERMS_TL T,
             rawdb.RA_TERMS_B B 
-         on
+         WHERE
             B.TERM_ID = T.TERM_ID 
-         
-         where T.LANGUAGE = 'US'
+            AND T.LANGUAGE = 'US'
       )
       rt 
       ON rt.term_id = oa.term_id 
@@ -668,6 +687,7 @@ WHERE
       so_creation 
       ON so_creation.service_order_id = jso.service_order_id 
  
+<<<<<<< HEAD:service_order/38-service_order-spark4.py
         LEFT JOIN cte_ra_contacts cship_to_contacts
           ON cship_to_contacts.contact_id = su.ship_to_contact_id
        LEFT JOIN cte_ra_contacts csold_to_contacts
@@ -686,3 +706,13 @@ df.write.mode("overwrite").parquet("s3://jostens-data-dev-test/test_order_header
 df = spark.read.parquet("s3://jostens-data-dev-test/test_order_header/")
 df_check.count() 
 df_check.show(10) 
+=======
+        LEFT JOIN cte_ra_contacts ship_to_contacts
+          ON ship_to_contacts.contact_id = su.ship_to_contact_id
+       LEFT JOIN cte_ra_contacts sold_to_contacts
+          ON sold_to_contacts.contact_id = su.sold_to_contact_id
+       LEFT JOIN cte_ra_contacts bill_to_contacts
+          ON bill_to_contacts.contact_id = su.bill_to_contact_id
+ 
+;
+>>>>>>> c6d68581ea01d7cb8e1547494e89598ad2a0c4b3:service_order/38-service_order-athena-3_26.sql
