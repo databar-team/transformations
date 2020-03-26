@@ -52,39 +52,36 @@ SELECT
    su.ship_to_site_use_id as SHIP_TO_ADDRESS_ID,
    su.sold_to_site_use_id as SOLD_TO_ADDRESS_ID,
    su.bill_to_site_use_id as BILL_TO_ADDRESS_ID,
-
-      ship_to_contacts.last_name ||
+    cship_to_contacts.last_name ||
       CASE
          WHEN
-            ship_to_contacts.first_name = NULL
+            cship_to_contacts.first_name = NULL
          THEN
             NULL 
          ELSE
-            (', ' || ship_to_contacts.first_name )
+            (', ' || cship_to_contacts.first_name )
       END AS SHIP_TO_CONTACT,
     
-      sold_to_contacts.last_name ||
+      csold_to_contacts.last_name ||
       CASE
          WHEN
-            sold_to_contacts.first_name = NULL
+            csold_to_contacts.first_name = NULL
          THEN
             NULL 
          ELSE
-            (', ' || sold_to_contacts.first_name )
+            (', ' || csold_to_contacts.first_name )
       END AS SOLD_TO_CONTACT,
  
-      bill_to_contacts.last_name ||
+      cbill_to_contacts.last_name ||
       CASE
          WHEN
-            bill_to_contacts.first_name = NULL
+            cbill_to_contacts.first_name = NULL
          THEN
             NULL 
          ELSE
-            (', ' || bill_to_contacts.first_name )
-      END AS BILL_TO_CONTACTS,
-
-
-   jso.purchase_order_num as PURCHASE_ORDER_NUMBER,
+            (', ' || cbill_to_contacts.first_name )
+      END AS BILL_TO_CONTACT,
+      jso.purchase_order_num as PURCHASE_ORDER_NUMBER,
    jso.copied_from_service_order_id as COPY_FROM_SERVICE_ORDER_NUMBER,
    jso.orig_system_source as ORIG_SYSTEM_SOURCE,
    jso.orig_system_reference as ORIG_SYSTEM_REFERENCE,
@@ -222,12 +219,12 @@ SELECT
    AS RECG_CRM, 	/*crm*/
    CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN INSTR (jso.service_order_type, '-') > 0 THEN SUBSTR (jso.service_order_type, 1, (INSTR (jso.service_order_type, '-') - 1)) ELSE jso.service_order_type END ELSE NULL END as SERVICE_ORDER_TYPE1,
 CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN INSTR (jso.service_order_type, '-') > 0 THEN SUBSTR (jso.service_order_type, (INSTR (jso.service_order_type, '-') + 1)) ELSE NULL END ELSE NULL END AS SERVICE_ORDER_TYPE2,
-   jso.salesrep_tx_type as SALES_REP_TRANSACTION_TYPE, 
+jso.salesrep_tx_type as SALES_REP_TRANSACTION_TYPE, 
    fndu.user_name as CREATED_BY, 
-   date_format(jso.creation_date, 'dd-MM-yyyy HH:mm:ss') as CREATION_DATE, 
+   jso.creation_date as CREATION_DATE, 
    so_creation.user_name as FIRST_ACTIVATED_BY, 
    so_creation.creation_date as FIRST_ACTIVATION_DATE, 
-   jso.price_builder_code as PRICE_BUILDER, 
+   jso.price_builder_code as PRICE_BUILDER,
    CASE
       WHEN
          jso.context = 'DIPL' 
@@ -351,7 +348,7 @@ CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN INSTR (jso.service_
       ELSE
          NULL 
    END
-, CHR (10), CHR (32))) as GT_PO_NUMBER_REQUIRED, 
+, CHR (10), CHR (32))) as GT_PO_NUMBER_REQUIRED,
 REPLACE (jso.attribute15, CHR (10), '') as REGALIA_EMAIL_ADDRESS, 
 UPPER (REPLACE (
    CASE
@@ -411,8 +408,7 @@ UPPER (REPLACE (
       THEN
          jso.attribute5 
    END
-   AS SCHEDULING_OFFSET_DAYS, 
-   CASE WHEN jso.context = 'DIPL' THEN jso.attribute12 WHEN jso.context = 'GREG' THEN jso.attribute12 ELSE NULL END as HOMESHIP_FLAG,
+   AS SCHEDULING_OFFSET_DAYS,
    CASE
       WHEN
          jso.context = 'DIPL' 
@@ -425,8 +421,9 @@ UPPER (REPLACE (
       ELSE
          NULL 
    END
-   as HOMESHIP_FLAG, jso.context as CONTEXT, 
-jso.attribute1 as ATTRIBUTE1, 
+   as HOMESHIP_FLAG, 
+   jso.context as CONTEXT,
+   jso.attribute1 as ATTRIBUTE1, 
 jso.attribute2 as ATTRIBUTE2, 
 jso.attribute3 as ATTRIBUTE3, 
 jso.attribute4 as ATTRIBUTE4, 
@@ -456,6 +453,9 @@ jso.attribute27 as ATTRIBUTE27,
 jso.attribute28 as ATTRIBUTE28, 
 jso.attribute29 as ATTRIBUTE29, 
 jso.attribute30 as ATTRIBUTE30 
+
+   
+   
 FROM
    rawdb.joe_service_orders jso 
    INNER JOIN
@@ -645,7 +645,7 @@ FROM
          SELECT DISTINCT
 	jsoh.service_order_id, 
 	fndu1.user_name,
-	jsoh.creation_date 
+     jsoh.creation_date
 FROM 
 	rawdb.fnd_user fndu1
 LEFT join
@@ -668,12 +668,12 @@ WHERE
       so_creation 
       ON so_creation.service_order_id = jso.service_order_id 
  
-        LEFT JOIN cte_ra_contacts ship_to_contacts
-          ON ship_to_contacts.contact_id = su.ship_to_contact_id
-       LEFT JOIN cte_ra_contacts sold_to_contacts
-          ON sold_to_contacts.contact_id = su.sold_to_contact_id
-       LEFT JOIN cte_ra_contacts bill_to_contacts
-          ON bill_to_contacts.contact_id = su.bill_to_contact_id
+        LEFT JOIN cte_ra_contacts cship_to_contacts
+          ON cship_to_contacts.contact_id = su.ship_to_contact_id
+       LEFT JOIN cte_ra_contacts csold_to_contacts
+          ON csold_to_contacts.contact_id = su.sold_to_contact_id
+       LEFT JOIN cte_ra_contacts cbill_to_contacts
+          ON cbill_to_contacts.contact_id = su.bill_to_contact_id
  
       limit 10""" 
        
@@ -682,9 +682,7 @@ df = sqlContext.sql(sql)
 df.count() 
 df.show(10) 
 
-### Save DF to S3: 
-df.write.mode("overwrite").parquet("s3://jostens-data-dev-analysis/service_order/") 
-### Read From S3: 
-df_check = spark.read.parquet("s3://jostens-data-dev-analysis/service_order/") 
+df.write.mode("overwrite").parquet("s3://jostens-data-dev-test/test_order_header/") 
+df = spark.read.parquet("s3://jostens-data-dev-test/test_order_header/")
 df_check.count() 
 df_check.show(10) 
