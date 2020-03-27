@@ -57,16 +57,16 @@ SELECT
    jcl_team.meaning as CUSTOMER_SERVICE_TEAM_NAME,
    jso.assigned_customer_service_rep as ASSIGNED_CUSTOMER_SERVICE_REP,
    fu.user_name as CUSTOMER_SERVICE_REP_NAME,
-   date_format(jso.start_date_active, '%d-%m-%Y') as start_date_active,
-   date_format(jso.end_date_active, '%d-%m-%Y') as END_DATE_ACTIVE,
+   jso.start_date_active as start_date_active,
+   jso.end_date_active as END_DATE_ACTIVE,
    oa.name as AGREEMENT_NUMBER,
    oa.agreement_num as AGREEMENT_NAME,
    oa.agreement_type_code as AGREEMENT_TYPE_CODE,
    ol.meaning as AGREEMENT_TYPE_DESC,
    opl.name as AGREEMENT_PRICE_LIST,
    rt.name as AGREEMENT_TERMS,
-   date_format(oa.start_date_active, '%d-%m-%Y') as AGREEMENT_START_DATE_ACTIVE,
-   date_format(oa.end_date_active, '%d-%m-%Y') as AGREEMENT_END_DATE_ACTIVE,
+   oa.start_date_active as AGREEMENT_START_DATE_ACTIVE,
+   oa.end_date_active as AGREEMENT_END_DATE_ACTIVE,
    jso.product_offering_usage as PRODUCT_OFFERING_USAGE,
    jso.pricing_method as PRICING_METHOD,
    SUBSTR (jso.special_instructions, 1, 2000) as SPECIAL_INSTRUCTIONS,
@@ -189,7 +189,7 @@ SELECT
 CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN STRPOS (jso.service_order_type, '-') > 0 THEN SUBSTR (jso.service_order_type, (STRPOS (jso.service_order_type, '-') + 1)) ELSE NULL END ELSE NULL END AS SERVICE_ORDER_TYPE2,
    jso.salesrep_tx_type as SALES_REP_TRANSACTION_TYPE, 
    fndu.user_name as CREATED_BY, 
-   date_format(jso.creation_date, '%d-%m-%Y  %H:%i:%s') as CREATION_DATE, 
+   jso.creation_date as CREATION_DATE, 
    so_creation.user_name as FIRST_ACTIVATED_BY, 
    so_creation.creation_date as FIRST_ACTIVATION_DATE, 
    jso.price_builder_code as PRICE_BUILDER, 
@@ -611,7 +611,7 @@ FROM
             jsoh.service_order_id,
             /*use distinct because service_order_id can have exact same create date in joe_so_status_history*/
             fndu1.user_name,
-            date_format(jsoh.creation_date, '%d-%m-%Y  %H:%i:%s') creation_date 
+            jsoh.creation_date creation_date 
          FROM
             rawdb.fnd_user fndu1 
             RIGHT OUTER JOIN
