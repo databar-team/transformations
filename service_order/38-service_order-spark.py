@@ -683,6 +683,6 @@ df.count()
 df.show(10) 
 
 df.write.mode("overwrite").parquet("s3://jostens-data-dev-test/test_order_header/") 
-df = spark.read.parquet("s3://jostens-data-dev-test/test_order_header/")
+df_check = spark.read.parquet("s3://jostens-data-dev-test/test_order_header/")
 df_check.count() 
 df_check.show(10) 

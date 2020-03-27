@@ -2,14 +2,13 @@ SELECT
        msi.inventory_item_id  as INVENTORY_ITEM_ID,
        msi.organization_id    as ORGANIZATION_ID,
        msi.cost_of_sales_account  as COGS_CODE_COMBINATION_ID ,
-       msi.planning_make_buy_code,
        msi.sales_account   as SALES_CODE_COMBINATION_ID,
-       msi.expense_account    as   as EXPENSE_CODE_COMBINATION_ID,
+       msi.expense_account    as EXPENSE_CODE_COMBINATION_ID,
        mp.organization_code   as ORGANIZATION_CODE,
        hou.name   as ORGANIZATION_NAME,
        msi.segment1   as ITEM_NUMBER,
        msi.std_lot_size    as STD_LOT_SIZE,
-       msi_tl.description  as ,
+       msi_tl.description  as DESCRIPTION,
        fcl.meaning       as ITEM_TYPE,
        msi.inventory_item_status_code   as ITEM_STATUS,
        msi.unit_weight   as UNIT_WEIGHT,
@@ -26,27 +25,21 @@ SELECT
        msi.inventory_asset_flag   as INVENTORY_ASSET_FLAG,
        CASE misi.secondary_inventory WHEN NULL THEN 'N' ELSE 'Y' END   as  DROPSHIP_FLAG,
        ml.meaning   as   PLANNING_MAKE_BUY,
-       CASE cic.material_cost WHEN NULL THEN 0 ELSE cic.material_cost END   as MATERIAL_COST,
-       CASE cic.resource_cost WHEN NULL THEN 0 ELSE cic.resource_cost END   as RESOURCE_COST,
-       CASE cic.outside_processing_cost WHEN NULL THEN 0 ELSE cic.outside_processing_cost END   as OUTSIDE_PROCESSING_COST,
-       CASE cic.material_overhead_cost WHEN NULL THEN 0 ELSE cic.material_overhead_cost END   as MATERIAL_OVERHEAD_COST,
-       CASE cic.overhead_cost WHEN NULL THEN 0 ELSE cic.overhead_cost END   as OVERHEAD_COST,
-       CASE cic.item_cost WHEN NULL THEN 0 ELSE cic.item_cost END   as ITEM_COST,
-       jd.invoice_usage_desc   as ,
+       coalesce (cic.material_cost, 0) as MATERIAL_COST,
+       coalesce (cic.resource_cost, 0) as RESOURCE_COST,
+       coalesce (cic.outside_processing_cost, 0) as OUTSIDE_PROCESSING_COST,
+       coalesce (cic.material_overhead_cost, 0) as MATERIAL_OVERHEAD_COST,
+       coalesce (cic.overhead_cost, 0) as OVERHEAD_COST,
+       coalesce (cic.item_cost, 0) as ITEM_COST,
+       UPPER (REPLACE (jd.invoice_usage_desc, CHR (10), NULL)) as DESCRIPTOR_INVOICE_USAGE,
        -- upper (jd.invoice_usage_desc),
        jd.item_type_id    ITEM_TYPE_ID,
-       msi.shippable_item_flag,
+       UPPER (msi.shippable_item_flag) as SHIPPABLE_ITEM_FLAG,
        -- UPPER (msi.shippable_item_flag) SHIPPABLE_ITEM_FLAG,
-       CASE msi.inventory_planning_code
-          WHEN 2 THEN msi.min_minmax_quantity
-          ELSE NULL
-       END MIN_MINMAX_QUANTITY,
-       CASE msi.inventory_planning_code
-          WHEN 2 THEN msi.max_minmax_quantity
-          ELSE NULL
-       END MAX_MINMAX_QUANTITY,
-       msi.lot_control_code    LOT_CONTROL_CODE,
-       msi.full_lead_time      FULL_LEAD_TIME
+       CASE msi.inventory_planning_code WHEN 2 THEN msi.min_minmax_quantity ELSE NULL END as MIN_MINMAX_QUANTITY,
+       CASE msi.inventory_planning_code WHEN 2 THEN msi.max_minmax_quantity ELSE NULL END as MAX_MINMAX_QUANTITY,
+       msi.lot_control_code  as  LOT_CONTROL_CODE,
+       msi.full_lead_time   as   FULL_LEAD_TIME
  
 FROM
        rawdb.mtl_system_items_b msi
