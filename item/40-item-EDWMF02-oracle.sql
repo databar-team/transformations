@@ -7,7 +7,7 @@
 
 SELECT jd.inventory_item_id,
        msi.segment1                                 AS item_number,
-       fifst.id_flex_structure_name                 AS structure_name,
+       t_struct.id_flex_structure_name                 AS structure_name,
        fifsm.segment_name,
        DECODE (fifsm.application_column_name,
                'SEGMENT2', jd.segment2,
@@ -63,20 +63,41 @@ SELECT jd.inventory_item_id,
           AS segment_value,
        SUBSTR (fifsm.application_column_name, 8, 2) segment_number,
        jd.descriptor_id
-  FROM fnd_id_flex_segments_vl   fifsm,
-       fnd_id_flex_structures_vl fifst,
-       fnd_application_vl        fa,
-       mtl_system_items_vl       msi,
-       jmf_descriptors           jd
+  FROM FND_ID_FLEX_SEGMENTS_TL T_seg
+       INNER JOIN FND_ID_FLEX_SEGMENTS fifsm
+          ON     fifsm.APPLICATION_ID = T_seg.APPLICATION_ID
+             AND fifsm.ID_FLEX_CODE = T_seg.ID_FLEX_CODE
+             AND fifsm.ID_FLEX_NUM = T_seg.ID_FLEX_NUM
+             AND fifsm.APPLICATION_COLUMN_NAME =
+                    T_seg.APPLICATION_COLUMN_NAME
+       INNER JOIN FND_ID_FLEX_STRUCTURES fifst
+          ON     fifsm.application_id = fifst.application_id
+             AND fifsm.id_flex_code = fifst.id_flex_code
+             AND fifsm.id_flex_num = fifst.id_flex_num
+       INNER JOIN FND_ID_FLEX_STRUCTURES_TL T_struct
+          ON     fifst.APPLICATION_ID = T_struct.APPLICATION_ID
+             AND fifst.ID_FLEX_CODE = T_struct.ID_FLEX_CODE
+             AND fifst.ID_FLEX_NUM = T_struct.ID_FLEX_NUM
+       INNER JOIN FND_APPLICATION fa
+          ON fifst.application_id = fa.application_id
+       INNER JOIN FND_APPLICATION_TL fat
+          ON fa.APPLICATION_ID = fat.APPLICATION_ID
+       INNER JOIN jmf_descriptors jd ON jd.item_type_id = fifst.id_flex_num
+       LEFT JOIN
+       (SELECT b.INVENTORY_ITEM_ID, b.ORGANIZATION_ID, b.SEGMENT1
+          FROM MTL_SYSTEM_ITEMS_TL T
+               INNER JOIN MTL_SYSTEM_ITEMS_B B
+                  ON     B.INVENTORY_ITEM_ID = T.INVENTORY_ITEM_ID
+                     AND B.ORGANIZATION_ID = T.ORGANIZATION_ID
+         WHERE T.LANGUAGE = USERENV ('LANG')) msi
+          ON jd.inventory_item_id = msi.inventory_item_id
  WHERE     
-       jd.inventory_item_id = msi.inventory_item_id(+)
-       AND msi.organization_id(+) = 121                          -- Master Org
        AND fa.application_short_name = 'XXJMF'                   -- CR R12EDW.
-       AND fifst.application_id = fa.application_id
        AND fifst.id_flex_code = 'JDES'
-       AND jd.item_type_id = fifst.id_flex_num
-       AND fifsm.application_id = fifst.application_id
-       AND fifsm.id_flex_code = fifst.id_flex_code
-       AND fifsm.id_flex_num = fifst.id_flex_num
        AND fifsm.application_column_name <> 'SEGMENT1'
-       AND fifst.enabled_flag = 'Y';
+       AND fifst.enabled_flag = 'Y'
+       AND (msi.organization_id = 121 OR msi.organization_id IS NULL) -- Master Org
+       AND T_seg.LANGUAGE = USERENV ('LANG')
+       AND t_struct.LANGUAGE = USERENV ('LANG')
+       AND fat.LANGUAGE = USERENV ('LANG');
+	   
