@@ -87,13 +87,14 @@ CREATE TABLE jostens_stage.indv_order
   PRIMARY KEY (indv_order_number)
 );
 
-TRUNCATE TABLE  jostens_stage.indv_order ;
+--TRUNCATE TABLE  jostens_stage.indv_order ;
 ​
 COPY jostens_stage.indv_order
 FROM 's3://jostens-data-dev-analysis/indv_order/'
 FORMAT AS PARQUET
 IAM_ROLE 'arn:aws:iam::147913565791:role/redshift-iam-role-s3-glue-athena' ;
 ​
+SELECT COUNT(*) FROM jostens_stage.indv_order;
 DROP TABLE IF EXISTS jostens.indv_order; 
 ​
 CREATE TABLE jostens.indv_order
