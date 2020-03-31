@@ -103,3 +103,5 @@ AS
 SELECT  *
 FROM  jostens_stage.indv_order  ;
 ​
+--data type
+select pg_get_cols ('jostens.indv_order');
