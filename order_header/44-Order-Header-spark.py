@@ -1,5 +1,4 @@
-sql = """ 
- WITH cte_xxxx
+sql = """WITH cte_xxxx
 AS
 (SELECT joha.context
       ,HCA.ACCOUNT_NUMBER
@@ -70,7 +69,7 @@ CASE joha.context WHEN 'DIPL' THEN joha.attribute16 when 'GREG' then joha.attrib
 joha.combined_order_header_id as COMBINED_BRIDGE_ORDER,
 joha.combined_order_flag as COMBINED_ORDER_FLAG,
 fndu.user_name as CREATED_BY,
-date_format(joha.creation_date, 'dd-MM-yyyy HH:mm:ss') as CREATION_DATE,
+joha.creation_date as CREATION_DATE,
 joha.comments as COMMENTS,
 CASE joha.context WHEN 'LFXP' THEN joha.attribute1 ELSE NULL END as LFXP_WHO,
 CASE joha.context WHEN 'LFXP' THEN joha.attribute2 ELSE NULL END as LFXP_ORDER_NUMBER,
@@ -100,7 +99,7 @@ UPPER (joha.mfg_instructions) as MFG_INSTRUCTIONS,
 CASE joha.context WHEN 'GREG' THEN joha.attribute20 ELSE NULL END as GREG_GRAD_TYPE_DATE,
 CASE joha.context WHEN 'DIPL' THEN joha.attribute11 ELSE NULL END as SUBMITTER_TYPE,
 coalesce(jsr.attribute3, '') as SHOP_HANDLING_CODE,
-date_format(joha.LAST_UPDATE_DATE, 'dd-MM-yyyy') as LAST_UPDATE_DATE,
+joha.LAST_UPDATE_DATE as LAST_UPDATE_DATE,
 CASE joha.context WHEN 'JLRY' THEN joha.attribute18 ELSE NULL END as SCHEDULE_TYPE,
 joha.purchase_order_number as PURCHASE_ORDER_NUMBER,
 CASE joha.context WHEN 'JLRY' THEN joha.attribute17 when 'ANNC' then joha.attribute17 ELSE NULL END as ZDP_INDICATOR,
@@ -143,7 +142,7 @@ joha.merge_eligible_flag as MERGE_ELIGIBLE_FLAG,
           ON     joha.service_order_id = jsr.service_order_id -- Added new by madishs
              AND jsr.report_name = 'MFG_PROC'
        LEFT JOIN cte_xxxx
-          on cte_xxxx.order_header_id = joha.order_header_id      """
+          on cte_xxxx.order_header_id = joha.order_header_id"""
 
 ### Run Query: 
 print (sql) 
