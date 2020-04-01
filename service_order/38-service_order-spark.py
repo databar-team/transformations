@@ -89,16 +89,16 @@ SELECT
    jcl_team.meaning as CUSTOMER_SERVICE_TEAM_NAME,
    jso.assigned_customer_service_rep as ASSIGNED_CUSTOMER_SERVICE_REP,
    fu.user_name as CUSTOMER_SERVICE_REP_NAME,
-   date_format(jso.start_date_active, 'dd-MM-yyyy') as start_date_active,
-   date_format(jso.end_date_active, 'dd-MM-yyyy') as END_DATE_ACTIVE,
+   jso.start_date_active as start_date_active,
+   jso.end_date_active as END_DATE_ACTIVE,
    oa.name as AGREEMENT_NUMBER,
    oa.agreement_num as AGREEMENT_NAME,
    oa.agreement_type_code as AGREEMENT_TYPE_CODE,
    ol.meaning as AGREEMENT_TYPE_DESC,
    opl.name as AGREEMENT_PRICE_LIST,
    rt.name as AGREEMENT_TERMS,
-   date_format(oa.start_date_active, 'dd-MM-yyyy') as AGREEMENT_START_DATE_ACTIVE,
-   date_format(oa.end_date_active, 'dd-MM-yyyy') as AGREEMENT_END_DATE_ACTIVE,
+   oa.start_date_active as AGREEMENT_START_DATE_ACTIVE,
+   oa.end_date_active as AGREEMENT_END_DATE_ACTIVE,
    jso.product_offering_usage as PRODUCT_OFFERING_USAGE,
    jso.pricing_method as PRICING_METHOD,
    SUBSTR (jso.special_instructions, 1, 2000) as SPECIAL_INSTRUCTIONS,
@@ -673,9 +673,7 @@ WHERE
        LEFT JOIN cte_ra_contacts csold_to_contacts
           ON csold_to_contacts.contact_id = su.sold_to_contact_id
        LEFT JOIN cte_ra_contacts cbill_to_contacts
-          ON cbill_to_contacts.contact_id = su.bill_to_contact_id
- 
-      limit 10""" 
+          ON cbill_to_contacts.contact_id = su.bill_to_contact_id""" 
        
 print (sql) 
 df = sqlContext.sql(sql) 

@@ -1,3 +1,38 @@
+WITH cte_ra_contacts as (
+   
+   SELECT 
+         ACCT_ROLE.CUST_ACCOUNT_ROLE_ID      AS CONTACT_ID,
+         SUBSTR (PARTY.PERSON_LAST_NAME, 1, 50)  AS last_name,
+         SUBSTR (PARTY.PERSON_FIRST_NAME, 1, 40) AS first_name
+   FROM 
+         rawdb.HZ_CUST_ACCOUNT_ROLES ACCT_ROLE
+   INNER JOIN
+         rawdb.HZ_RELATIONSHIPS      REL
+         ON
+         ACCT_ROLE.PARTY_ID = REL.PARTY_ID
+   INNER JOIN
+         rawdb.HZ_ORG_CONTACTS       ORG_CONT
+         on 
+         ORG_CONT.PARTY_RELATIONSHIP_ID = REL.RELATIONSHIP_ID
+   INNER JOIN 
+         rawdb.HZ_PARTIES            PARTY
+         on 
+         REL.SUBJECT_ID = PARTY.PARTY_ID
+   INNER JOIN 
+         rawdb.HZ_PARTIES            REL_PARTY
+         on 
+         REL.PARTY_ID = REL_PARTY.PARTY_ID
+   INNER JOIN 
+         rawdb.HZ_CUST_ACCOUNTS      ROLE_ACCT
+         on 
+         ROLE_ACCT.PARTY_ID = REL.OBJECT_ID
+         and ACCT_ROLE.CUST_ACCOUNT_ID = ROLE_ACCT.CUST_ACCOUNT_ID
+   WHERE     
+         ACCT_ROLE.ROLE_TYPE = 'CONTACT'
+         AND REL.SUBJECT_TABLE_NAME = 'HZ_PARTIES'
+         AND REL.OBJECT_TABLE_NAME = 'HZ_PARTIES'
+)
+
 SELECT
    jso.service_order_id as SERVICE_ORDER_NUMBER,
    jso.description as SERVICE_ORDER_DESCRIPTION,
@@ -17,39 +52,36 @@ SELECT
    su.ship_to_site_use_id as SHIP_TO_ADDRESS_ID,
    su.sold_to_site_use_id as SOLD_TO_ADDRESS_ID,
    su.bill_to_site_use_id as BILL_TO_ADDRESS_ID,
-
-      ship_to_contacts.last_name ||
+    cship_to_contacts.last_name ||
       CASE
          WHEN
-            ship_to_contacts.first_name = NULL
+            cship_to_contacts.first_name = NULL
          THEN
             NULL 
          ELSE
-            (', ' || ship_to_contacts.first_name )
+            (', ' || cship_to_contacts.first_name )
       END AS SHIP_TO_CONTACT,
     
-      sold_to_contacts.last_name ||
+      csold_to_contacts.last_name ||
       CASE
          WHEN
-            sold_to_contacts.first_name = NULL
+            csold_to_contacts.first_name = NULL
          THEN
             NULL 
          ELSE
-            (', ' || sold_to_contacts.first_name )
+            (', ' || csold_to_contacts.first_name )
       END AS SOLD_TO_CONTACT,
  
-      bill_to_contacts.last_name ||
+      cbill_to_contacts.last_name ||
       CASE
          WHEN
-            bill_to_contacts.first_name = NULL
+            cbill_to_contacts.first_name = NULL
          THEN
             NULL 
          ELSE
-            (', ' || bill_to_contacts.first_name )
-      END AS BILL_TO_CONTACTS,
-
-
-   jso.purchase_order_num as PURCHASE_ORDER_NUMBER,
+            (', ' || cbill_to_contacts.first_name )
+      END AS BILL_TO_CONTACT,
+      jso.purchase_order_num as PURCHASE_ORDER_NUMBER,
    jso.copied_from_service_order_id as COPY_FROM_SERVICE_ORDER_NUMBER,
    jso.orig_system_source as ORIG_SYSTEM_SOURCE,
    jso.orig_system_reference as ORIG_SYSTEM_REFERENCE,
@@ -185,14 +217,14 @@ SELECT
          NULL 
    END
    AS RECG_CRM, 	/*crm*/
-   CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN STRPOS (jso.service_order_type, '-') > 0 THEN SUBSTR (jso.service_order_type, 1, (STRPOS (jso.service_order_type, '-') - 1)) ELSE jso.service_order_type END ELSE NULL END as SERVICE_ORDER_TYPE1,
-CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN STRPOS (jso.service_order_type, '-') > 0 THEN SUBSTR (jso.service_order_type, (STRPOS (jso.service_order_type, '-') + 1)) ELSE NULL END ELSE NULL END AS SERVICE_ORDER_TYPE2,
-   jso.salesrep_tx_type as SALES_REP_TRANSACTION_TYPE, 
+   CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN INSTR (jso.service_order_type, '-') > 0 THEN SUBSTR (jso.service_order_type, 1, (INSTR (jso.service_order_type, '-') - 1)) ELSE jso.service_order_type END ELSE NULL END as SERVICE_ORDER_TYPE1,
+CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN INSTR (jso.service_order_type, '-') > 0 THEN SUBSTR (jso.service_order_type, (INSTR (jso.service_order_type, '-') + 1)) ELSE NULL END ELSE NULL END AS SERVICE_ORDER_TYPE2,
+jso.salesrep_tx_type as SALES_REP_TRANSACTION_TYPE, 
    fndu.user_name as CREATED_BY, 
    jso.creation_date as CREATION_DATE, 
    so_creation.user_name as FIRST_ACTIVATED_BY, 
    so_creation.creation_date as FIRST_ACTIVATION_DATE, 
-   jso.price_builder_code as PRICE_BUILDER, 
+   jso.price_builder_code as PRICE_BUILDER,
    CASE
       WHEN
          jso.context = 'DIPL' 
@@ -316,7 +348,7 @@ CASE WHEN jso.order_group IN ('COMM', 'DIPL') THEN CASE WHEN STRPOS (jso.service
       ELSE
          NULL 
    END
-, CHR (10), CHR (32))) as GT_PO_NUMBER_REQUIRED, 
+, CHR (10), CHR (32))) as GT_PO_NUMBER_REQUIRED,
 REPLACE (jso.attribute15, CHR (10), '') as REGALIA_EMAIL_ADDRESS, 
 UPPER (REPLACE (
    CASE
@@ -376,8 +408,7 @@ UPPER (REPLACE (
       THEN
          jso.attribute5 
    END
-   AS SCHEDULING_OFFSET_DAYS, 
-   CASE WHEN jso.context = 'DIPL' THEN jso.attribute12 WHEN jso.context = 'GREG' THEN jso.attribute12 ELSE NULL END as HOMESHIP_FLAG,
+   AS SCHEDULING_OFFSET_DAYS,
    CASE
       WHEN
          jso.context = 'DIPL' 
@@ -390,8 +421,9 @@ UPPER (REPLACE (
       ELSE
          NULL 
    END
-   as HOMESHIP_FLAG, jso.context as CONTEXT, 
-jso.attribute1 as ATTRIBUTE1, 
+   as HOMESHIP_FLAG, 
+   jso.context as CONTEXT,
+   jso.attribute1 as ATTRIBUTE1, 
 jso.attribute2 as ATTRIBUTE2, 
 jso.attribute3 as ATTRIBUTE3, 
 jso.attribute4 as ATTRIBUTE4, 
@@ -421,6 +453,9 @@ jso.attribute27 as ATTRIBUTE27,
 jso.attribute28 as ATTRIBUTE28, 
 jso.attribute29 as ATTRIBUTE29, 
 jso.attribute30 as ATTRIBUTE30 
+
+   
+   
 FROM
    rawdb.joe_service_orders jso 
    INNER JOIN
@@ -605,39 +640,37 @@ FROM
       ON fndu.user_id = jso.created_by 
    
 
-   LEFT JOIN
+  LEFT JOIN
       (
          SELECT DISTINCT
-            jsoh.service_order_id,
-            /*use distinct because service_order_id can have exact same create date in joe_so_status_history*/
-            fndu1.user_name,
-            jsoh.creation_date creation_date 
-         FROM
-            rawdb.fnd_user fndu1 
-            RIGHT OUTER JOIN
-               rawdb.joe_so_status_history jsoh 
-               on jsoh.creation_date = 
-               (
-                  SELECT
-                     MIN (jsoh1.creation_date) 
-                  FROM
-                     rawdb.joe_so_status_history jsoh1
-                 INNER JOIN rawdb.joe_so_status_history jsoh 
-                  ON
-                     jsoh1.service_order_id = jsoh.service_order_id 
-               )
-               AND fndu1.user_id = jsoh.created_by 
-         WHERE
-            jsoh.status = 'ACTIVE'
+	jsoh.service_order_id, 
+	fndu1.user_name,
+     jsoh.creation_date
+FROM 
+	rawdb.fnd_user fndu1
+LEFT join
+	rawdb.joe_so_status_history jsoh
+ON
+	fndu1.user_id = jsoh.created_by
+WHERE     
+	jsoh.status = 'ACTIVE'
+	AND jsoh.creation_date =
+	(
+			SELECT 
+				MIN (jsoh1.creation_date)  
+			FROM 
+				rawdb.joe_so_status_history jsoh1
+			WHERE     
+				jsoh1.service_order_id = jsoh.service_order_id
+				AND status = 'ACTIVE'
+	)
       )
       so_creation 
       ON so_creation.service_order_id = jso.service_order_id 
  
-        LEFT JOIN ra_contacts ship_to_contacts
-          ON ship_to_contacts.contact_id = su.ship_to_contact_id
-       LEFT JOIN ra_contacts sold_to_contacts
-          ON sold_to_contacts.contact_id = su.sold_to_contact_id
-       LEFT JOIN ra_contacts bill_to_contacts
-          ON bill_to_contacts.contact_id = su.bill_to_contact_id
- 
-      limit 10;
+        LEFT JOIN cte_ra_contacts cship_to_contacts
+          ON cship_to_contacts.contact_id = su.ship_to_contact_id
+       LEFT JOIN cte_ra_contacts csold_to_contacts
+          ON csold_to_contacts.contact_id = su.sold_to_contact_id
+       LEFT JOIN cte_ra_contacts cbill_to_contacts
+          ON cbill_to_contacts.contact_id = su.bill_to_contact_id
