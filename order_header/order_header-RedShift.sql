@@ -1,3 +1,13 @@
+Select 
+ pid, 
+ user_name, 
+ starttime, 
+ query, 
+ query, 
+ status 
+from stv_recents 
+where status='Running';
+SELECT pg_terminate_backend(9840);
 DROP TABLE jostens_stage.order_header;
 CREATE TABLE jostens_stage.order_header(
   bridge_order_number bigint,
@@ -102,8 +112,7 @@ CREATE TABLE jostens_stage.order_header(
   PRIMARY KEY (bridge_order_number)
 );
 
-
---TRUNCATE TABLE  jostens_stage.order_header ;
+TRUNCATE TABLE  jostens_stage.order_header ;
 ​
 COPY jostens_stage.order_header
 FROM 's3://jostens-data-dev-analysis/order_header/'
@@ -119,5 +128,8 @@ AS
 SELECT  *
 FROM  jostens_stage.order_header  ;
 ​
+select * from jostens.order_header limit 5;
+select count(*) from jostens.order_header limit 5;
+
 --data type
 select pg_get_cols ('jostens.order_header');

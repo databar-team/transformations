@@ -9,8 +9,6 @@ jioa.early_delivery_list_status as EARLY_DELIVERY_LIST_STATUS,
 jioa.external_bill_to_system_ref as EXTERNAL_BILL_TO_SYSTEM_REF,
 jioa.external_ship_to_system_ref as EXTERNAL_SHIP_TO_SYSTEM_REF,
 jioa.order_form_id as ORDER_FORM_ID,
---jof.form_name as FORM_NAME,
---jof.form_type as FORM_TYPE,
 item_validation_source as ITEM_VALIDATION_SOURCE,
 jioa.ordered_date as ORDERED_DATE,
 jioa.org_id as ORGANIZATION_ID,
@@ -34,16 +32,13 @@ jioa.source_transact_reference as SOURCE_TRANSACT_REFERENCE,
 jioa.status as STATUS,
 jioa.status_reason as STATUS_REASON,
 jioa.use_profile_flag as USE_PROFILE_FLAG,
-                   '"' || REPLACE (jioa.salesrep_notes, '"', '""') || '"' as SALESREP_NOTES,
+ '"' || REPLACE (jioa.salesrep_notes, '"', '""') || '"' as SALESREP_NOTES,
 jioa.creation_date as IO_CREATION_DATE,
-                   '"' || REPLACE (jioa.salesrep_notes, '"', '""') || '"' as COMMENTS,
+'"' || REPLACE (jioa.salesrep_notes, '"', '""') || '"' as COMMENTS,
+SUBSTR (CASE jiodfv.context_value WHEN 'DIPL' THEN jiodfv.grad_pres_date ELSE NULL END, 1, 150) as GRAD_PRES_DATE,
+SUBSTR(CASE jiodfv.context_value WHEN 'DIPL' THEN jiodfv.using_contemporary_dateline ELSE NULL END,1,80) as USING_CONTEMPORARY_DATELINE,
 jioa.attribute39 as NAMELIST_FILE,
  CASE jioa.context WHEN 'LFXP_REPAIR' THEN jioa.attribute29 ELSE NULL END AS ORIGINAL_ITEM_ORDERED,
-/*
-" SUBSTR (CASE jiodfv.context_value WHEN 'DIPL' THEN jiodfv.grad_pres_date ELSE NULL END, 1, 150) as GRAD_PRES_DATE,
-"
-  SUBSTR(CASE jiodfv.context_value WHEN 'DIPL' THEN jiodfv.using_contemporary_dateline ELSE NULL END,1,80) as USING_CONTEMPORARY_DATELINE,
-  */
 jioa.combined_indv_order_id as COMBINED_INDV_ORDER_NUMBER,
  SUBSTR(CASE jioa.context WHEN 'JEWL' THEN jioa.attribute9 ELSE NULL END,1,5) as JOP_IO_NUMBER,
  CASE WHEN jioa.context = 'ANNC_SY04' THEN CASE WHEN jioa.attribute65 = '1' THEN 'Y' ELSE 'N' END ELSE NULL END as SPECIAL_OFFERS_OPT_IN_FLAG,
@@ -60,7 +55,6 @@ CASE jioa.context WHEN 'JLRY_STD' THEN jioa.attribute85 ELSE NULL END as IOC99_P
 CASE jioa.context WHEN 'JLRY_STD' THEN jioa.attribute86 ELSE NULL END as IOC99_PROD_CODE2,
 CASE jioa.context WHEN 'JLRY_STD' THEN jioa.attribute87 ELSE NULL END as IOC99_PROD_CODE3,
 CASE jioa.context WHEN 'JLRY_STD' THEN jioa.attribute88 ELSE NULL END as IOC99_PROD_CODE4,
-/*CASE jioa.context WHEN 'JLRY_STD' THEN jipp.payment_plan_name ELSE NULL END as PAYMENT_PLAN_NAME,*/
 jioa.last_updated_by as LAST_UPDATED_BY,
 jioa.distribution1 as DISTRIBUTION1,
 jioa.distribution2 as DISTRIBUTION2,
@@ -69,13 +63,13 @@ jioa.ATTRIBUTE78 as ATTRIBUTE78,
 jioa.ATTRIBUTE82 as ATTRIBUTE82,
 jioa.ATTRIBUTE83 as ATTRIBUTE83,
  '"' || REPLACE (jioa.ATTRIBUTE126, '"', '""') || '"' as ATTRIBUTE126,
-jioa.ATTRIBUTE138 as ATTRIBUTE138,
+ jioa.ATTRIBUTE138 as ATTRIBUTE138,
 jioa.ATTRIBUTE146 as ATTRIBUTE146,
 jioa.ATTRIBUTE147 as ATTRIBUTE147,
 SUBSTR (CASE jioa.context WHEN 'JLRY_STD' THEN jioa.ATTRIBUTE1 WHEN 'CHAMP_RING' THEN jioa.ATTRIBUTE1 WHEN 'JEWL' THEN jioa.ATTRIBUTE38 WHEN 'JEWL_CAN_SCAN' THEN jioa.ATTRIBUTE38 WHEN 'IOC99' THEN jioa.ATTRIBUTE38 ELSE NULL END, 1, 80) AS STONE_COLOR,
-  CASE CASE jioa.context WHEN 'JLRY_STD' THEN jioa.ATTRIBUTE45 WHEN 'CHAMP_RING' THEN jioa.ATTRIBUTE45 ELSE NULL END WHEN 'Y' THEN 'Y'ELSE NULL END AS ALLOW_PRICING_ERR,
-  SUBSTR (CASE CASE jioa.context WHEN 'JLRY_STD' THEN jioa.ATTRIBUTE45 WHEN 'CHAMP_RING' THEN jioa.ATTRIBUTE45 ELSE NULL END WHEN 'Y' THEN CASE jioa.context WHEN 'JLRY_STD' THEN jioa.ATTRIBUTE46 WHEN 'CHAMP_RING' THEN jioa.attribute46 ELSE NULL END ELSE NULL END, 1, 150) AS ALLOW_PRICING_ERR_REASON,
- CASE jioa.context WHEN 'JLRY_STD' THEN SUBSTR (jioa.ATTRIBUTE106, 1, 2) ELSE NULL END AS TOP_CORE_FONT,
+CASE CASE jioa.context WHEN 'JLRY_STD' THEN jioa.ATTRIBUTE45 WHEN 'CHAMP_RING' THEN jioa.ATTRIBUTE45 ELSE NULL END WHEN 'Y' THEN 'Y'ELSE NULL END AS ALLOW_PRICING_ERR,
+SUBSTR (CASE CASE jioa.context WHEN 'JLRY_STD' THEN jioa.ATTRIBUTE45 WHEN 'CHAMP_RING' THEN jioa.ATTRIBUTE45 ELSE NULL END WHEN 'Y' THEN CASE jioa.context WHEN 'JLRY_STD' THEN jioa.ATTRIBUTE46 WHEN 'CHAMP_RING' THEN jioa.attribute46 ELSE NULL END ELSE NULL END, 1, 150) AS ALLOW_PRICING_ERR_REASON,
+CASE jioa.context WHEN 'JLRY_STD' THEN SUBSTR (jioa.ATTRIBUTE106, 1, 2) ELSE NULL END AS TOP_CORE_FONT,
  CASE jioa.context WHEN 'AN_SPR08' THEN SUBSTR (jioa.attribute28, 1, 3) WHEN
           'AN_SPR18' THEN SUBSTR (jioa.attribute28, 1, 3) WHEN
           'ANNC_SCAN_WEB' THEN SUBSTR (jioa.attribute28, 1, 3) WHEN
@@ -91,7 +85,7 @@ SUBSTR (CASE jioa.context WHEN 'JLRY_STD' THEN jioa.ATTRIBUTE1 WHEN 'CHAMP_RING'
           CASE SUBSTR (jioa.context, 1, 7) WHEN
                    'ANNC_SY' THEN SUBSTR (jioa.attribute28, 1, 3) ELSE
                    NULL END END AS HEIGHT,
-CASE
+                   CASE
           jioa.context WHEN
           'AN_SPR08' THEN SUBSTR (jioa.attribute27, 1, 3) WHEN
           'AN_SPR18' THEN SUBSTR (jioa.attribute27, 1, 3) WHEN
@@ -170,18 +164,19 @@ CASE
 jioa.attribute120 AS DESIGN_ID,                                      /* design_id */
 jioa.attribute249 AS ORDERED_BY_NAME,                                  /*ordered_by_name*/
 jioa.attribute203 AS ORIGINAL_WEB_QUOTE                                           /* WQD */               
-FROM joe_indv_orders_all jioa
-INNER JOIN joe_order_headers_all joha
+
+                                  
+FROM rawdb.joe_indv_orders_all jioa
+INNER JOIN rawdb.joe_order_headers_all joha
 ON jioa.order_header_id = joha.order_header_id
-LEFT JOIN joe_service_orders jso
+LEFT JOIN rawdb.joe_service_orders jso
 ON joha.service_order_id = jso.service_order_id
-LEFT JOIN jfn_common_lookups jcl_sale
+LEFT JOIN rawdb.jfn_common_lookups jcl_sale
 ON     jcl_sale.lookup_code = jioa.salesrep_tx_type
 AND jcl_sale.lookup_type = 'SALESREP_TX_TYPES'
-LEFT JOIN jfn_common_lookups jcl_ship
+LEFT JOIN rawdb.jfn_common_lookups jcl_ship
 ON     jcl_ship.lookup_code = jioa.ship_method_code
 AND jcl_ship.lookup_type = 'FREIGHT_VENDORS'
-
 LEFT JOIN
 (SELECT indv_order_id,
 context    AS context_value,
