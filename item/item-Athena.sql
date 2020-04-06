@@ -1,5 +1,5 @@
-CREATE TABLE rawdb.edw_items_22
- WITH (format='Parquet', external_location='s3://jostens-data-dev-raw/edw_items_22/test/',
+CREATE TABLE rawdb.item
+ WITH (format='Parquet', external_location='s3://jostens-data-dev-raw/item/test/',
  parquet_compression = 'SNAPPY')
  as
  with cover_size_CTE as (
