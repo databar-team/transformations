@@ -27,7 +27,6 @@ CREATE TABLE jostens_stage.item(
   design varchar(50), 
   trim_size varchar(50), 
   system_update_date_time date
-  PRIMARY KEY (design)
 );
 TRUNCATE TABLE  jostens_stage.item ;
 ​
