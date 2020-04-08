@@ -700,8 +700,7 @@ WHERE
           ON csold_to_contacts.contact_id = su.sold_to_contact_id
        LEFT JOIN cte_ra_contacts cbill_to_contacts
           ON cbill_to_contacts.contact_id = su.bill_to_contact_id
- 
-      limit 10""" 
+ """ 
         df = sqlContext.sql(sql)
         writePath = "s3://jostens-data-{}-analysis/{}/".format(envPrefix,table)
         print ('writing to {}'.format(writePath))
