@@ -45,6 +45,7 @@ try:
        mc_pc.segment1    as PROD_CLASS_CATEGORY,
        mc_ps.segment1    as PROD_SUB_CATEGORY,
        mc_pur.segment2    as PURCHASING_SUB_CLASS,
+       fifs.id_flex_structure_name as STRUCTURE_NAME,
        msi.primary_uom_code   as PRIMARY_UNIT_OF_MEASURE,
        CASE msi.attribute2 WHEN 'GENERIC' THEN 'Y' ELSE 'N' END   as GENERIC_FLAG,
        msi.costing_enabled_flag   as COSTING_ENABLED_FLAG,
