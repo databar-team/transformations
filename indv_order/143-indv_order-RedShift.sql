@@ -98,7 +98,7 @@ SELECT COUNT(*) FROM jostens_stage.indv_order;
 DROP TABLE IF EXISTS jostens.indv_order; 
 ​
 CREATE TABLE jostens.indv_order
-SORTKEY (indv_order) 
+SORTKEY (indv_order_number) 
 AS 
 SELECT  *
 FROM  jostens_stage.indv_order  ;
