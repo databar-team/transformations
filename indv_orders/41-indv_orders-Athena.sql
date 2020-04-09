@@ -1,3 +1,5 @@
+WITH CTES AS (SELECT HCA.ACCOUNT_NUMBER, HCA.CUST_ACCOUNT_ID FROM HZ_CUST_ACCOUNTS HCA)
+
     SELECT joha.order_header_id as BRIDGE_ORDER_NUMBER,
     jrs.salesrep_number as SALES_REP_NUMBER,
 hca.account_number as ORACLE_CUSTOMER_NUMBER,
@@ -96,28 +98,31 @@ CASE joha.context WHEN 'OWMS' THEN joha.attribute14 ELSE NULL END as OWMS_ORDER_
 CASE joha.context WHEN 'OWMS' THEN joha.attribute15 ELSE NULL END as OWMS_JOB_NUM,
 CASE joha.context WHEN 'OWMS' THEN joha.attribute16 ELSE NULL END as OWMS_STUFF_DATE,
 CASE joha.context WHEN 'OWMS' THEN joha.attribute17 ELSE NULL END as OWMS_CD_CODE,
+CASE joha.context WHEN 'OWMS' THEN c.ACCOUNT_NUMBER ELSE NULL END as OWMS_CUST_NUM,                                                                            
 
 CASE joha.context WHEN 'OWMS' THEN joha.attribute20 ELSE NULL END as OWMS_ORDER_INFO,
 joha.merge_eligible_flag as MERGE_ELIGIBLE_FLAG,
 CASE joha.order_group WHEN 'ANNC' THEN joha.attribute18 ELSE NULL END as COMBINED_NDPD_IND
-FROM joe_order_headers_all joha
-LEFT JOIN fnd_user fndu ON fndu.user_id = joha.created_by
-LEFT JOIN jfn_common_lookups jcl_cst
+FROM rawdb.joe_order_headers_all joha
+LEFT JOIN rawdb.fnd_user fndu ON fndu.user_id = joha.created_by
+LEFT JOIN rawdb.jfn_common_lookups jcl_cst
 ON     joha.customer_service_team = jcl_cst.lookup_code
 AND 'CUSTOMER_SERVICE_TEAMS_' || joha.order_group =
 jcl_cst.lookup_type
-LEFT JOIN jfn_common_lookups jcl_sc
+LEFT JOIN rawdb.jfn_common_lookups jcl_sc
 ON     joha.sales_channel_code = jcl_sc.lookup_code
 AND 'SALES_CHANNEL' = jcl_sc.lookup_type
-LEFT JOIN oe_transaction_types_all ota
+LEFT JOIN rawdb.oe_transaction_types_all ota
 ON joha.order_type_id = ota.transaction_type_id
-LEFT JOIN oe_transaction_types_tl ott
+LEFT JOIN rawdb.oe_transaction_types_tl ott
 ON     ota.transaction_type_id = ott.transaction_type_id
 AND 'US' = ott.language
-LEFT JOIN jtf_rs_salesreps jrs
+LEFT JOIN rawdb.jtf_rs_salesreps jrs
 ON joha.salesrep_id = jrs.salesrep_id AND joha.org_id = jrs.org_id
-LEFT JOIN hz_cust_accounts hca
+LEFT JOIN rawdb.hz_cust_accounts hca
 ON joha.customer_id = hca.cust_account_id
-LEFT JOIN joe_so_reports jsr
+LEFT JOIN rawdb.joe_so_reports jsr
 ON     joha.service_order_id = jsr.service_order_id -- Added new by madishs
 AND jsr.report_name = 'MFG_PROC'
+LEFT JOIN CTES c
+          ON c.CUST_ACCOUNT_ID = try_cast(joha.ATTRIBUTE18 as bigint) 
